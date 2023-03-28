@@ -1,0 +1,15 @@
+{
+  "timeZone": "Pacific/Auckland",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "Invoices",
+        "libraryId": "1HZ_kJsNwpKwgcmygAjFBFwfWCGtBqHvQdZULhEdgXDNPXtn_cazX3qzx",
+        "version": "8",
+        "developmentMode": false
+      }
+    ]
+  }
+}
