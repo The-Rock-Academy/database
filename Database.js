@@ -97,7 +97,7 @@ class Database {
     //Call the attendance sheet resetter
     let attendanceSheet = this.ss.getSheetByName(AttendanceManager.sheetName());
     let attendanceManager = new AttendanceManager(attendanceSheet, previousTerm)
-    attendanceManager.reset(nextTermDates, previousTerm, this.getDatabaseTerm())
+    attendanceManager.reset(nextTermDates, nextTerm)
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
   }

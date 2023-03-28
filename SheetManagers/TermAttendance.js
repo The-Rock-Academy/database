@@ -38,7 +38,7 @@ class AttendanceManager extends DatabaseSheetManager {
    * Reset the attendance sheet.
    * This will move the current term to the previous term slots both for attendance and for invoice
    */
-  reset(nextTermDetails, currentTerm, nextTerm) {
+  reset(nextTermDetails, nextTerm) {
     console.log("Resetting the Attendance sheet")
 
     //----Refreshing the attendance section----------
@@ -46,7 +46,7 @@ class AttendanceManager extends DatabaseSheetManager {
     let currentTermNameRange = this.sheet.getRange(1,this.currentTermAttendanceColumnNum);
     let currentTermDateRange = this.sheet.getRange(2,this.currentTermAttendanceColumnNum, 1,this.currentTermWeeks)
     //Rename current term
-    currentTermNameRange.setValue("Previous " + currentTerm)
+    currentTermNameRange.setValue("Previous " +this.currentTerm)
 
     //Add in new Attendance
     let columnOfNextTerm = this.currentTermAttendanceColumnNum+this.currentTermWeeks
@@ -79,57 +79,12 @@ class AttendanceManager extends DatabaseSheetManager {
 
     //-----Refreshing the invoice section-------------
 
-    let currentInvoiceColumn = this.getColumn("Current Invoice " + currentTerm);
-    let nextInvoiceColumn = currentInvoiceColumn + 4;
-
-    //Rename current to previous
-    this.sheet.getRange(1, currentInvoiceColumn).setValue("Previous Invoice " + currentTerm);
-    //Add in new column
-    this.sheet.insertColumns(nextInvoiceColumn, 4);
-    //Copy everything across
-    this.sheet.getRange(1, currentInvoiceColumn, this.sheet.getMaxRows(), 4).copyTo(this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4))
-    //Set next term name
-    this.sheet.getRange(1,nextInvoiceColumn).setValue("Current Invoice " + nextTerm)
-
-    //Clear old contents and comments
-    this.sheet.getRange(3, nextInvoiceColumn, this.sheet.getMaxRows(), 4).clear({contentsOnly: true});
-    this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4).clear({commentsOnly: true});
-
-    //Delete old column
-    this.sheet.deleteColumns(currentInvoiceColumn-4, 4);
+    this.resetInvoiceColumns(nextTerm);
 
     //-------Refreshing term comments--------
-    
-    let currentCommentsColumn = this.getColumn("Current term comments");
-    let currentCommentsTitle = this.sheet.getRange(1, currentCommentsColumn);
+    this.resetCommentColumns();
 
-    //Add new coments column
-    this.sheet.insertColumnsAfter(currentCommentsColumn,1);
-    let nextCommentsTitle = this.sheet.getRange(1, currentCommentsColumn+1);
 
-    //Rename current and next
-    currentCommentsTitle.setValue("Previous term comments")
-    nextCommentsTitle.setValue("Current term comments")
-
-    //Copy formatting over
-    currentCommentsTitle.copyTo(nextCommentsTitle, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-    currentCommentsTitle.copyTo(nextCommentsTitle, SpreadsheetApp.CopyPasteType.PASTE_COLUMN_WIDTHS, false)
-
-    //Delete previous comments
-    this.sheet.deleteColumns(currentCommentsColumn-1);
-  }
-
-  /**
-   * This will take a column name and find the column number. This is used so that I dont have to worry about having correct column numbers.
-   * If column names are on different rows than I can easily change it in one place here.
-   */
-  getColumn(columnName) {
-    let searchResult = this.sheet.getRange(1,1, 1, this.sheet.getMaxColumns()).createTextFinder(columnName).findNext();
-    if (searchResult == null) {
-      throw "Cant find the column named: " + columnName + " in " + this.sheet.getName() + " sheet";
-    } else {
-      return searchResult.getColumn()
-    }
   }
 
   getInactiveRowNumber() {
@@ -391,14 +346,14 @@ class AttendanceManager extends DatabaseSheetManager {
 
     let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
 
-    if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) && currentTerm)) {
+    if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&this.currentTerm)) {
       SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
       return;
     }
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, costOfLesson, instrumentHire, billingCompany, currentTerm, "term");
+    let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, costOfLesson, instrumentHire, billingCompany,this.currentTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row);
       invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();
@@ -408,7 +363,7 @@ class AttendanceManager extends DatabaseSheetManager {
     // ----------------------------
     // Load the invoice number into the attendance sheet
     // ----------------------------
-    this.sheet.getRange(activeRow, this.getColumn("Current Invoice " + currentTerm)).setValue(invoice.number);
+    this.sheet.getRange(activeRow, this.getColumn("Current Invoice " +this.currentTerm)).setValue(invoice.number);
 
     SpreadsheetApp.flush(); //This ensures that the invoice is actaully loaded at this point
 
