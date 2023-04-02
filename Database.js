@@ -119,6 +119,8 @@ function getSheetManagerForType(ss, type) {
   switch(type) {
     case "term":
       return newAttendanceSheet(ss.getSheetByName("Master Sheet"));
+    case "shp":
+      return SHPManager.newFromSS(ss, undefined);
     default:
       throw new Error("You are trying to get a sheet for type: '" + type + "' which does not exist.");
   }
