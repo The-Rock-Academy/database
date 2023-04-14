@@ -20,7 +20,7 @@ class SHPManager extends DatabaseSheetManager {
 
         // Insert new header and rows
         this.sheet.insertRowsBefore(3, 31);
-        let headerRow = this.sheet.getRange(3,1,1,this.currentInvoiceColumn);
+        let headerRow = this.sheet.getRange(3,1,1,this.sheet.getMaxColumns());
 
         let finalTermWCDate = nextTermDetails[nextTermDetails.length - 1];
         let tempDate = new Date(finalTermWCDate);
@@ -36,6 +36,10 @@ class SHPManager extends DatabaseSheetManager {
         console.log(headerText);
 
         headerRow.setValue(headerText).merge();
+        headerRow.setFontColor('black');
+        headerRow.setFontSize(13);
+        headerRow.setHorizontalAlignment("center");
+        headerRow.setFontWeight("bold")
     }
 
     updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate) {
@@ -51,7 +55,7 @@ class SHPManager extends DatabaseSheetManager {
           let invoiceInfo = this.getInvoiceRanges(invoiceNumber);
     
           //Dont clear the number if the user was trying to update the a invoice but decided against it.
-          if ((invoiceInfo.date.isBlank() && invoiceInfo.amount.isBlank())) {
+          if (invoiceInfo.date.isBlank() && invoiceInfo.amount.isBlank()) {
             invoiceInfo.number.clearContent();
           }
         }
@@ -81,19 +85,12 @@ class SHPManager extends DatabaseSheetManager {
         let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow)
         let updating = false;
         if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow).date.isBlank()) {
-            if (forTerm) {
-                let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the SHP.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
-                if (answer == ui.Button.NO) {
-                    return
-                } else {
-                    updating = true
-                }
-            } else {
-            let invoiceInformation = this.getInvoiceRanges(this.getInvoiceNumberOfRow(row))
-            this.addTempInvoice(row, invoiceInformation.number.getValue(), !invoiceInformation.paidDate.isBlank())
-            invoiceInformation.number.clear()
-            }
-    
+          let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the SHP.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
+          if (answer == ui.Button.NO) {
+              return
+          } else {
+              updating = true
+          }
         }
     
         // Check if the invoice sender is already occupied.
@@ -133,7 +130,7 @@ class SHPManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, price / numberOfLessons, instrumentHire, billingCompany, "School holidays after " + this.currentTerm, "shp");
+        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays after " + this.currentTerm, "shp");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();

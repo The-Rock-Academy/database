@@ -138,6 +138,7 @@ class DatabaseSheetManager {
     this.sheet.getRange(1, currentInvoiceColumn).setValue("Previous Invoice " + this.currentTerm);
     //Add in new column
     this.sheet.insertColumns(nextInvoiceColumn, 4);
+    this.sheet.setColumnWidths(nextInvoiceColumn, 4, 80);
     //Copy everything across
     this.sheet.getRange(1, currentInvoiceColumn, this.sheet.getMaxRows(), 4).copyTo(this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4))
     //Set next term name
