@@ -348,6 +348,7 @@ class AttendanceManager extends DatabaseSheetManager {
       invoice.number = this.getInvoiceNumberOfRow(row);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
       invoice.note = "This invoice is an updated version of an invoice sent on " + previousInvoiceInformation.date.getValue().toLocaleString('en-NZ') + ", for $" + previousInvoiceInformation.amount.getValue() + ".";
+      invoice.updated = true;
     }
     invoiceSheet.loadInvoice(invoice);
 
