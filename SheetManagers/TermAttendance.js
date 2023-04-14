@@ -331,6 +331,7 @@ class AttendanceManager extends DatabaseSheetManager {
 
     if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&this.currentTerm)) {
       SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
+      this.clearAttendanceNotInvoiced();
       return;
     }
 
