@@ -23,7 +23,7 @@ class Database {
       if (questionResponse == ui.Button.NO) {
         return
       } else {
-        this.archiveFolder.removeFile(currentArchive);
+        currentArchive.setTrashed(true);
       }
     }
     DriveApp.getFileById(this.ss.getId()).makeCopy(archiveName, this.archiveFolder)
@@ -97,7 +97,11 @@ class Database {
     //Call the attendance sheet resetter
     let attendanceSheet = this.ss.getSheetByName(AttendanceManager.sheetName());
     let attendanceManager = new AttendanceManager(attendanceSheet, previousTerm)
-    attendanceManager.reset(nextTermDates, previousTerm, this.getDatabaseTerm())
+    attendanceManager.reset(nextTermDates, nextTerm);
+
+    //Call SHP sheet resetter
+    SHPManager.newFromSS(this.ss).reset(nextTermDates);
+
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
   }
@@ -115,6 +119,8 @@ function getSheetManagerForType(ss, type) {
   switch(type) {
     case "term":
       return newAttendanceSheet(ss.getSheetByName("Master Sheet"));
+    case "shp":
+      return SHPManager.newFromSS(ss, undefined);
     default:
       throw new Error("You are trying to get a sheet for type: '" + type + "' which does not exist.");
   }
