@@ -134,6 +134,7 @@ class SHPManager extends DatabaseSheetManager {
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();
+            invoice.updated = true;
         }
         invoiceSheet.loadInvoice(invoice);
     
