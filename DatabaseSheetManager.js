@@ -68,6 +68,10 @@ class DatabaseSheetManager {
     throw new Error("clearInvoiceNumber has not been implemented yet");
   }
 
+  clearSheetAfterClearingInvoiceSender(invoiceNumber) {
+    this.clearInvoiceNumber(invoiceNumber);
+  }
+
   /**
    * Searches for the column number of the column name given
    * @param {string} columnName What is the column name you are looking for
