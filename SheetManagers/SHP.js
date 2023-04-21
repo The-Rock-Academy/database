@@ -49,6 +49,21 @@ class SHPManager extends DatabaseSheetManager {
         invoiceRange.paidDate.clearContent();
     }
 
+    findRowTerm(startRow) {
+        let row = startRow;
+        while (true) {
+          let range = this.sheet.getRange(row, 1);
+          let merged = range.getMergedRanges();
+          if (merged.length > 0 && merged[0].getNumColumns() == this.sheet.getLastColumn()) {
+            return range.getValue();
+          }
+          row--;
+          if (row < 3) {
+            throw new error("Couldnt find a term value for the row: " + startRow);
+          }
+        }
+      }
+
     clearInvoiceNumber(invoiceNumber) {
         console.log("Trying to clear " + invoiceNumber + " from the shp sheet")
         try {
@@ -130,7 +145,7 @@ class SHPManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays after " + this.currentTerm, "shp");
+        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays " + this.findRowTerm(row), "shp");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();
