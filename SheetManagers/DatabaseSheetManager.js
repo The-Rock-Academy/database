@@ -109,7 +109,7 @@ class DatabaseSheetManager {
    * @returns The number of the row or -1 if it hasnt found a row
    */
   getInvoiceRow(invoiceNumber, currentInvoiceColumn = this.currentInvoiceColumn) {
-    let foundRow = this.sheet.getRange(3, currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).findNext()
+    let foundRow = this.sheet.getRange(3, currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
     if (foundRow != null) return foundRow.getRowIndex()
     else  {
       console.warn("Could not find a row for invoice number: " + invoiceNumber);
