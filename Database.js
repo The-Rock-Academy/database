@@ -34,11 +34,11 @@ class Database {
    * Used by the various attendance sheets
    */
   getDatabaseTerm() {
-    return this.ss.getSheetByName("Home").getRange(1,1).getValue();
+    return this.ss.getSheetByName("Data").getRange(1,2).getValue();
   }
 
   setDatabaseTerm(newValue){
-    this.ss.getSheetByName("Home").getRange(1,1).setValue(newValue);
+    this.ss.getSheetByName("Data").getRange(1,2).setValue(newValue);
   }
 
   /**
@@ -121,6 +121,8 @@ function getSheetManagerForType(ss, type) {
       return newAttendanceSheet(ss.getSheetByName("Master Sheet"));
     case "shp":
       return SHPManager.newFromSS(ss, undefined);
+    case "band":
+      return BandSchoolManager.newFromSS(ss);
     default:
       throw new Error("You are trying to get a sheet for type: '" + type + "' which does not exist.");
   }
