@@ -52,7 +52,7 @@ class BandSchoolManager extends DatabaseSheetManager {
 
         //Getting lesson cost. Current it is very much hard coded but this can be fixed once I have gotten guidance from Geoff.
         let numberOfWeeks = this.sheet.getRange(1,this.getColumn("Current Term")).getMergedRanges()[0].getNumColumns()
-        let totalCost = 300;
+        let totalCost = this.sheet.getColumn(activeRow, this.getColumn("Pupil cost")).getValue();
         let chargedLessons = numberOfWeeks;
         let costOfLesson = totalCost / chargedLessons;
 
