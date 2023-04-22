@@ -134,17 +134,18 @@ class DatabaseSheetManager {
   }
   // -------------------------//------------------------ Resetting -------------------------//-------------------------//
 
-  resetInvoiceColumns(nextTerm) {
-    let currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm);
-    let nextInvoiceColumn = currentInvoiceColumn + 4;
+  resetInvoiceColumns(nextTerm,nextTermInvoiceColumn=undefined) {
+    this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm);
+
+    let nextInvoiceColumn = nextTermInvoiceColumn == undefined ? this.currentInvoiceColumn + 4: nextTermInvoiceColumn;
 
     //Rename current to previous
-    this.sheet.getRange(1, currentInvoiceColumn).setValue("Previous Invoice " + this.currentTerm);
+    this.sheet.getRange(1, this.currentInvoiceColumn).setValue("Previous Invoice " + this.currentTerm);
     //Add in new column
     this.sheet.insertColumns(nextInvoiceColumn, 4);
     this.sheet.setColumnWidths(nextInvoiceColumn, 4, 80);
     //Copy everything across
-    this.sheet.getRange(1, currentInvoiceColumn, this.sheet.getMaxRows(), 4).copyTo(this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4))
+    this.sheet.getRange(1, this.currentInvoiceColumn, this.sheet.getMaxRows(), 4).copyTo(this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4))
     //Set next term name
     this.sheet.getRange(1,nextInvoiceColumn).setValue("Current Invoice " + nextTerm)
 
@@ -153,7 +154,9 @@ class DatabaseSheetManager {
     this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4).clear({commentsOnly: true});
 
     //Delete old column
-    this.sheet.deleteColumns(currentInvoiceColumn-4, 4);
+    if (nextTermInvoiceColumn == undefined) {
+      this.sheet.deleteColumns(this.currentInvoiceColumn, 4);
+    }
   }
 
   resetCommentColumns() {

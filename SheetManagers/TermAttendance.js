@@ -44,7 +44,7 @@ class AttendanceManager extends DatabaseSheetManager {
     currentTermNameRange.setValue("Previous " +this.currentTerm)
 
     //Add in new Attendance
-    let columnOfNextTerm = this.currentTermAttendanceColumnNum+this.currentTermWeeks
+    let columnOfNextTerm = this.currentInvoiceColumn+4
     let numberOfWeeksOfNextTerm = nextTermDetails.length
 
     //Add in column
@@ -74,7 +74,7 @@ class AttendanceManager extends DatabaseSheetManager {
 
     //-----Refreshing the invoice section-------------
 
-    this.resetInvoiceColumns(nextTerm);
+    this.resetInvoiceColumns(nextTerm, columnOfNextTerm+numberOfWeeksOfNextTerm-(this.currentTermAttendanceColumnNum - AttendanceManager.numberOfColumnsBeforeAttendanceStart()));
 
   }
 
