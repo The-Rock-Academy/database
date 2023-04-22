@@ -8,6 +8,8 @@ class AttendanceManager extends DatabaseSheetManager {
     this.currentTermAttendanceColumnNum = this.getColumn("Current " + this.currentTerm);
     this.currentTermWeeks = this.getCurrentTermWeeks();
     this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm, true)
+    this.previousInvoiceColumn = this.getColumn("Previous Invoice ");
+    this.previousTermWeeks = this.previousInvoiceColumn- AttendanceManager.numberOfColumnsBeforeAttendanceStart();
   }
 
   clean() {
@@ -99,7 +101,7 @@ class AttendanceManager extends DatabaseSheetManager {
    * Gets the previous invoices that are stored in the comments section
    */
   getPreviousInvoices(row) {
-    let comments = this.sheet.getRange(row, this.getColumn("Current term comments")).getValue();
+    let comments = this.sheet.getRange(row, this.getColumn("Comments")).getValue();
     let regexOutcome = /{Previousinvoices:((\d+[a-z]*,?)*)}/g.exec(comments.replace(/\s+/g, ''))
     if (regexOutcome != null) {
       let previousInvoices = new Array();
@@ -118,7 +120,7 @@ class AttendanceManager extends DatabaseSheetManager {
   }
 
   insertPreviousInvoicesIntoComments(row, invoices) {
-    let comments = this.sheet.getRange(row, this.getColumn("Current term comments"));
+    let comments = this.sheet.getRange(row, this.getColumn("Comments"));
     
     // Take all of the invoices and turn it into a array that can be compressed into a string
     let previousInvoiceStringArr = ["{Previous invoices:"];
@@ -198,7 +200,7 @@ class AttendanceManager extends DatabaseSheetManager {
  */
   updateAttendanceToInvoiced(invoiceNumber) {
     console.log(this.getAttendanceRange(this.getInvoiceRow(invoiceNumber)).getValues())
-    this.getAttendanceRange(this.getInvoiceRow(invoiceNumber), true).forEach(range => {
+    this.getAttendanceRange(this.getInvoiceRow(invoiceNumber), true, !this.invoiceCurrent(invoiceNumber)).forEach(range => {
       console.log("Checking: " + range.getValue());
       if (range.getBackground() != "#c8c8c8" && ["T", "P", "I"].includes(range.getValue())) {
         console.log("Updating colour")
@@ -214,7 +216,7 @@ class AttendanceManager extends DatabaseSheetManager {
   clearAttendanceNotInvoiced(invoiceNumber) {
     let attendanceRow = this.getInvoiceRow(invoiceNumber)
     if (attendanceRow != -1) {
-      this.getAttendanceRange(attendanceRow, true).forEach(range => {
+      this.getAttendanceRange(attendanceRow, true, !this.invoiceCurrent(invoiceNumber)).forEach(range => {
         if (range.getValue() == "I") range.clearContent();
       })
     }
@@ -226,22 +228,22 @@ class AttendanceManager extends DatabaseSheetManager {
   /**
    * Takes the row number and returns the attendance range.
    */
-  getAttendanceRange(row, asArray = false) {
+  getAttendanceRange(row, asArray = false, previousTerm=false) {
     if (asArray) {
       let attendanceRanges = new Array();
-      let weeks = Array(this.currentTermWeeks).fill().map((element, index) => index)
+      let weeks = Array(previousTerm?this.previousTermWeeks:this.currentTermWeeks).fill().map((element, index) => index)
       weeks.forEach(week => {
-        attendanceRanges.push(this.sheet.getRange(row, this.currentTermAttendanceColumnNum + week))
+        attendanceRanges.push(this.sheet.getRange(row, (previousTerm?AttendanceManager.numberOfColumnsBeforeAttendanceStart():this.currentTermAttendanceColumnNum) + week))
       })
       return attendanceRanges
     } else {
-      return this.sheet.getRange(row, this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks)
+      return this.sheet.getRange(row, previousTerm?AttendanceManager.numberOfColumnsBeforeAttendanceStart():this.currentTermAttendanceColumnNum, 1, previousTerm?this.previousTermWeeks:this.currentTermWeeks)
 
     }
   }
 
 
-  prepareInvoice(row, send = false, forTerm = true) {
+  prepareInvoice(row, send = false, forTerm = true, previousTerm = false) {
     let invoiceSheet = Invoices.newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
     let ui = SpreadsheetApp.getUi();
     let activeRow = row;
@@ -254,9 +256,10 @@ class AttendanceManager extends DatabaseSheetManager {
     let pupilName = this.sheet.getRange(activeRow, this.getColumn("Student Name")).getValue();
 
     // Check if invoice has already been sent.
-    let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow)
+    let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow, previousTerm?this.previousInvoiceColumn:undefined)
+
     let updating = false;
-    if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow).date.isBlank()) {
+    if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow, previousTerm).date.isBlank()) {
       if (forTerm) {
         let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the term.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
         if (answer == ui.Button.NO) {
@@ -265,7 +268,7 @@ class AttendanceManager extends DatabaseSheetManager {
           updating = true
         }
       } else {
-        let invoiceInformation = this.getInvoiceRanges(this.getInvoiceNumberOfRow(row))
+        let invoiceInformation = this.getInvoiceRanges(this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined))
         this.addTempInvoice(row, invoiceInformation.number.getValue(), !invoiceInformation.paidDate.isBlank())
         invoiceInformation.number.clear()
       }
@@ -303,12 +306,12 @@ class AttendanceManager extends DatabaseSheetManager {
 
     //Count lessons up until end of term simple
     console.log("Week number is: " + weekNumber);
-    let lessonsToInvoice = this.getAttendanceRange(activeRow, true).filter((range, index) => {
+    let lessonsToInvoice = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
       console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return (range.isBlank() || range.getValue() == "P") && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     });
 
-    let trialLessons = this.getAttendanceRange(activeRow, true).filter((range, index) => {
+    let trialLessons = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
       console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return range.getValue() == "T" && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     }).length
@@ -345,7 +348,7 @@ class AttendanceManager extends DatabaseSheetManager {
     // -----------------------------
     let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,this.currentTerm, "term");
     if (updating) {
-      invoice.number = this.getInvoiceNumberOfRow(row);
+      invoice.number = this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
       invoice.note = "This invoice is an updated version of an invoice sent on " + previousInvoiceInformation.date.getValue().toLocaleString('en-NZ') + ", for $" + previousInvoiceInformation.amount.getValue() + ".";
       invoice.updated = true;
@@ -355,9 +358,9 @@ class AttendanceManager extends DatabaseSheetManager {
     // ----------------------------
     // Load the invoice number into the attendance sheet
     // ----------------------------
-    this.sheet.getRange(activeRow, this.getColumn("Current Invoice " +this.currentTerm)).setValue(invoice.number);
+    this.sheet.getRange(activeRow, previousTerm?this.previousInvoiceColumn:this.currentInvoiceColumn).setValue(invoice.number);
     if (!updating) {
-          this.sheet.getRange(activeRow, this.getColumn("Current Invoice " +this.currentTerm)+1).setValue(invoice.getCosts().reduce( function(a, b){
+          this.sheet.getRange(activeRow,  (previousTerm?this.previousInvoiceColumn:this.currentInvoiceColumn)+1).setValue(invoice.getCosts().reduce( function(a, b){
         return a + b.price*b.quantity;
     }, 0));
     }
@@ -388,7 +391,7 @@ class AttendanceManager extends DatabaseSheetManager {
    * This is to called once the invoice is sent and the information is final
    */
   addInvoiceInfo(invoiceNumber, amount, date) {
-    let invoiceRanges = this.getInvoiceRanges(invoiceNumber);
+    let invoiceRanges = this.getInvoiceRanges(invoiceNumber, !this.invoiceCurrent(invoiceNumber));
     invoiceRanges.amount.setValue(amount)
     invoiceRanges.date.setValue(date)
     invoiceRanges.paidDate.clear()
@@ -396,15 +399,34 @@ class AttendanceManager extends DatabaseSheetManager {
     this.makeTempInvoicePermanent(this.getInvoiceRow(invoiceNumber))
   }
 
+      /**
+   * Get the pupil row for a particualr invoice number
+   * @param {*} invoiceNumber Invoice number in question
+   * @param {*} currentInvoiceColumn The current term invoice column in sheet
+   * @returns The number of the row or -1 if it hasnt found a row
+   */
+    getInvoiceRow(invoiceNumber, currentInvoiceColumn = this.currentInvoiceColumn) {
+      console.log("Using updated getInvoiceRow")
+      let foundRowCurrent = this.sheet.getRange(3, this.currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
+      let foundRowPrevious = this.sheet.getRange(3, this.previousInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
+      if (foundRowCurrent == null && foundRowPrevious == null) {
+        console.warn("Could not find a row for invoice number: " + invoiceNumber);
+        return -1
+      }
+      else  {
+        if (foundRowCurrent != null) return foundRowCurrent.getRowIndex()
+        else return foundRowPrevious.getRowIndex()
+      }
+    }
+
   clearInvoiceNumber(invoiceNumber) {
     console.log("Trying to clear " + invoiceNumber + " from the database")
     try {
-      let invoiceInfo = this.getInvoiceRanges(invoiceNumber);
+      let invoiceInfo = this.getInvoiceRanges(invoiceNumber, !this.invoiceCurrent(invoiceNumber));
 
       let previousInvoiceNumber = this.removeTempInvoice(this.getInvoiceRow(invoiceNumber))
       //Dont clear the number if the user was trying to update the a invoice but decided against it.
       if (invoiceInfo.date.isBlank()) {
-        console.log("Testing testing")
         invoiceInfo.amount.clear({contentsOnly: true})
         invoiceInfo.number.clear({contentsOnly: true})
       }
@@ -417,6 +439,15 @@ class AttendanceManager extends DatabaseSheetManager {
     catch(err) {
       console.warn("You have tried to clear a invoice number that couldnt be found.\n" + err);
     }
+  }
+  /**
+   * This will check if the invoice number is from the current term or not.
+   * You must konw that the invoice exists
+   */
+  invoiceCurrent(invoiceNumber) {
+    let foundRowCurrent = this.sheet.getRange(3, this.currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
+    if (foundRowCurrent != null) return true
+    else return false
   }
 
 }

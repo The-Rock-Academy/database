@@ -91,19 +91,29 @@ class DatabaseSheetManager {
    * @param {number} invoiceNumber 
    * @returns 
    */
-  getInvoiceRanges(invoiceNumber) {
+  getInvoiceRanges(invoiceNumber, previousTerm = false) {
     console.log("Current invoice column: " + this.currentInvoiceColumn);
     let invoiceRow = this.getInvoiceRow(invoiceNumber,  this.currentInvoiceColumn);
     console.log("Row of invoice number " + invoiceNumber + " is " + invoiceRow);
     if (invoiceRow == -1) {
       return null
     }
-    return {
-      number: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn),
-      amount: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 1),
-      date: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 2),
-      paidDate: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 3)
+    if (previousTerm) {
+      return {
+        number: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn),
+        amount: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 1),
+        date: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 2),
+        paidDate: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 3)
+      }
+    } else {
+      return {
+        number: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn),
+        amount: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 1),
+        date: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 2),
+        paidDate: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 3)
+      }
     }
+
   }
 
     /**
@@ -113,7 +123,7 @@ class DatabaseSheetManager {
    * @returns The number of the row or -1 if it hasnt found a row
    */
   getInvoiceRow(invoiceNumber, currentInvoiceColumn = this.currentInvoiceColumn) {
-    let foundRow = this.sheet.getRange(3, currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
+    let foundRowCurrent = this.sheet.getRange(3, currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
     if (foundRow != null) return foundRow.getRowIndex()
     else  {
       console.warn("Could not find a row for invoice number: " + invoiceNumber);
@@ -126,11 +136,11 @@ class DatabaseSheetManager {
    * @param {number} rowNumber Row number you are checking
    * @returns 
    */
-  getInvoiceNumberOfRow(rowNumber) {
+  getInvoiceNumberOfRow(rowNumber, previousInvoiceColumn=undefined) {
     console.log("searching for row invoice: " + rowNumber )
     console.log("Current invoice column: " + this.currentInvoiceColumn)
-    console.log(this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue())
-    return this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue()
+    console.log(this.sheet.getRange(rowNumber,previousInvoiceColumn == undefined?this.currentInvoiceColumn:previousInvoiceColumn).getValue())
+    return this.sheet.getRange(rowNumber, previousInvoiceColumn == undefined?this.currentInvoiceColumn:previousInvoiceColumn).getValue()
   }
   // -------------------------//------------------------ Resetting -------------------------//-------------------------//
 
