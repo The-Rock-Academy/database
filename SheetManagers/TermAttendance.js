@@ -332,7 +332,9 @@ class AttendanceManager extends DatabaseSheetManager {
 
     let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
 
-    if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&this.currentTerm)) {
+    let invoiceTerm = previousTerm? this.sheet.getRange(1,this.previousInvoiceColumn).getValue().slice(17) : this.currentTerm;
+
+    if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&invoiceTerm)) {
       SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
       this.clearAttendanceNotInvoiced();
       return;
@@ -346,7 +348,7 @@ class AttendanceManager extends DatabaseSheetManager {
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,this.currentTerm, "term");
+    let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
