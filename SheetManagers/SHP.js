@@ -59,7 +59,7 @@ class SHPManager extends DatabaseSheetManager {
           }
           row--;
           if (row < 3) {
-            throw new error("Couldnt find a term value for the row: " + startRow);
+            throw new Error("Couldnt find a term value for the row: " + startRow);
           }
         }
       }
