@@ -246,9 +246,7 @@ class AttendanceManager extends DatabaseSheetManager {
       currentDate.setDate(currentDate.getDate() + 8 - currentDate.getDay())
     }
     let nextMondayDate = currentDate;
-    console.log(nextMondayDate);
     let termDates = this.sheet.getRange(2, this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks).getValues();
-    console.log(termDates[0]);
     return termDates[0].findIndex(date => date.getDate() == nextMondayDate.getDate() && date.getMonth() == date.getMonth())
   }
 

@@ -32,19 +32,21 @@ class StudentProcessor extends NewStudentManager {
         this.sheet.getRange(this.activeRow, 1, 1, this.sheet.getLastColumn()).clear();
     }
 
-    filterBlankColumns(columnNames: string[]) {
-        return columnNames.map((name) => {
+    filterBlankColumns(columnNames: string[]): {} {
+        const result = {};
+        columnNames.forEach((name) => {
             let range = this.sheet.getRange(this.activeRow, this.getColumn(name));
             if (range.isBlank()) {
                 throw new Error("The " + name + " column is blank, please fill it in");
-            } else{
-                return range.getValue();
+            } else {
+                result[name.replaceAll(" ", "_")] = range.getValue();
             }
         });
+        return result;
     }
 
-    getGenericInfo(): string[] {
-        let genericInfoColumnNames: string[] = ["Name", "Email", "Number", "Suburb", "Student name", "Billing Company"];
+    getGenericInfo(): {} {
+        let genericInfoColumnNames: string[] = ["Name", "Email", "Number", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames);
     }
@@ -85,14 +87,14 @@ class StudentProcessor extends NewStudentManager {
         let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Instrument hire", "Tutor"];
         let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames);
 
-        let newStudentInfo = genericInformation.concat(weeklyLessonInfo);
+        const newStudentInfo = {...genericInformation, ...weeklyLessonInfo}
 
-        console.log("The new student information for weekly lessons is: " + newStudentInfo);
+        console.log("The new student information for weekly lessons is: " + JSON.stringify(newStudentInfo));
 
         // Add the student to the weekly lessons sheet
         let attendanceManager = AttendanceManager.getObjFromSS(this.sheet.getParent());
-        attendanceManager.addStudent.apply(attendanceManager, newStudentInfo);
-
+        attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Number, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Instrument_hire, newStudentInfo.Tutor);
+        
         // -----Email the parent and the tutor with confirmation-----
 
         // Get the templates
@@ -103,23 +105,12 @@ class StudentProcessor extends NewStudentManager {
         let subject_template = templateSheet.getRange(1, 2).getValue();
         let body_template = templateSheet.getRange(2, 2).getValue();
 
-        // Get the data
-        let data = {
-            "Name": genericInformation[0],
-            "Tutor": weeklyLessonInfo[weeklyLessonInformationColumnNames.indexOf("Tutor")],
-            "Lesson_length": weeklyLessonInfo[weeklyLessonInformationColumnNames.indexOf("Lesson length")],
-            "Lesson_cost": weeklyLessonInfo[weeklyLessonInformationColumnNames.indexOf("Lesson cost")],
-            "Instrument_hire": weeklyLessonInfo[weeklyLessonInformationColumnNames.indexOf("Instrument hire")],
-            "Preferred_days_of_week": weeklyLessonInfo[weeklyLessonInformationColumnNames.indexOf("Preferred days of week")],
-            "Number": genericInformation[2],
-            "Suburb": genericInformation[3],
-            "Student_name": genericInformation[4],
-            "Billing_company": genericInformation[5],
-        };  
-        };
-        
-        let emailer = Emails.newEmailer("New Student", "New Student");
+        // Get recipient information
+        let tutor_email =  (new StaffDetails(this.sheet.getParent())).getEmail(newStudentInfo.Tutor);
 
+        let emailer = Emails.newEmailer(subject_template, body_template);
+
+        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, []);
     }
     
 }
