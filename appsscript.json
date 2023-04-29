@@ -9,6 +9,12 @@
         "libraryId": "1HZ_kJsNwpKwgcmygAjFBFwfWCGtBqHvQdZULhEdgXDNPXtn_cazX3qzx",
         "version": "21",
         "developmentMode": false
+      },
+      {
+        "userSymbol": "Emails",
+        "libraryId": "1W1ghXqiU0ZkufoZ11oRl2iAPh8IPdNtmGUEHjYHM1czMD5f6Ss-JKo3z",
+        "version": "0",
+        "developmentMode": true
       }
     ]
   }

@@ -2,6 +2,10 @@ class AttendanceManager extends DatabaseSheetManager {
   static sheetName(){return "Master sheet"}
   static numberOfColumnsBeforeAttendanceStart() {return 2}
 
+  static getObjFromSS(SS) {
+    return new AttendanceManager(SS.getSheetByName(AttendanceManager.sheetName()))
+  }
+
   constructor(sheet, currentTerm) {
     super(sheet, currentTerm);
 
@@ -225,6 +229,29 @@ class AttendanceManager extends DatabaseSheetManager {
   // ------------------
   // Term length invoices
   // ------------------
+
+  /**
+   * This will give you the current week number.
+   * It will take the week number of the following monday.
+   * If it cant be found it returns a negative one.
+   * 
+   * @returns week number
+   */
+  getWeekNumber() {
+    let currentDate = new Date();
+    currentDate.setHours(0,0,0,0)
+    if (currentDate.getDay() == 0) {
+      currentDate.setDate(currentDate.getDate() + 1);
+    } else if (currentDate.getDay() != 1) {
+      currentDate.setDate(currentDate.getDate() + 8 - currentDate.getDay())
+    }
+    let nextMondayDate = currentDate;
+    console.log(nextMondayDate);
+    let termDates = this.sheet.getRange(2, this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks).getValues();
+    console.log(termDates[0]);
+    return termDates[0].findIndex(date => date.getDate() == nextMondayDate.getDate() && date.getMonth() == date.getMonth())
+  }
+
   /**
    * Takes the row number and returns the attendance range.
    */
@@ -292,17 +319,7 @@ class AttendanceManager extends DatabaseSheetManager {
     // ----- Get number of lessons -------
 
     //Find out what week to just assume all lessons will be attended
-    let currentDate = new Date();
-    currentDate.setHours(0,0,0,0)
-    if (currentDate.getDay() == 0) {
-      currentDate.setDate(currentDate.getDate() + 1);
-    } else if (currentDate.getDay() != 1) {
-      currentDate.setDate(currentDate.getDate() + 8 - currentDate.getDay())
-    }
-    let nextMondayDate = currentDate;
-    let termDates = this.sheet.getRange(2, this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks).getValues();
-    let weekNumber = termDates[0].findIndex(date => date.getTime() == nextMondayDate.getTime())
-
+    let weekNumber = this.getWeekNumber();
 
     //Count lessons up until end of term simple
     console.log("Week number is: " + weekNumber);
@@ -452,6 +469,57 @@ class AttendanceManager extends DatabaseSheetManager {
     else return false
   }
 
+  // ---------------------------------------------------------------------------------------
+  // ----------------------------- New pupils ----------------------------------------------
+  // ---------------------------------------------------------------------------------------
+
+  /**
+   * Take all the needed variables and add a new pupil to the database.
+   * @param {string} pupilName 
+   * @param {string} parentName 
+   * @param {string} email 
+   * @param {number} costOfLesson 
+   * @param {number} instrumentHire 
+   * @param {string} billingCompany 
+   * @param {string} tutor 
+   * @param {number} phone 
+   * @param {string} address 
+   * @param {string} preferedDay 
+   */
+  addStudent(parentName, email, phone, address, pupilName, billingCompany,  preferedDay, lessonLength, costOfLesson, instrumentHire, tutor) {
+    //Create the new row
+    let newStudentRow = this.getInactiveRowNumber();
+    this.sheet.insertRowAfter(newStudentRow-1);
+
+    //Add in all the information
+    this.sheet.getRange(newStudentRow, this.getColumn("Student Name")).setValue(pupilName);
+    this.sheet.getRange(newStudentRow, this.getColumn("Guardian")).setValue(parentName);
+    this.sheet.getRange(newStudentRow, this.getColumn("Email")).setValue(email);
+    this.sheet.getRange(newStudentRow, this.getColumn("Lesson Cost")).setValue(costOfLesson);
+    this.sheet.getRange(newStudentRow, this.getColumn("Hire cost")).setValue(instrumentHire);
+    this.sheet.getRange(newStudentRow, this.getColumn("Pupils Billing Company")).setValue(billingCompany);
+    this.sheet.getRange(newStudentRow, this.getColumn("Duration")).setValue(lessonLength);
+    this.sheet.getRange(newStudentRow, this.getColumn("Teacher")).setValue(tutor);
+    this.sheet.getRange(newStudentRow, this.getColumn("Phone")).setValue(phone);
+    this.sheet.getRange(newStudentRow, this.getColumn("Suburb/Address")).setValue(address);
+    this.sheet.getRange(newStudentRow, this.getColumn("Day")).setValue(preferedDay);
+    
+    //Set the status to active
+    this.sheet.getRange(newStudentRow, this.getColumn("Status")).setValue("Active");
+
+    //X out all of the weeks up to and including this week.
+    let currentWeekNumber = this.getWeekNumber();
+    if (currentWeekNumber < 1) {
+      console.warn("Current week number is below 1: " + currentWeekNumber)
+    }
+    
+    for (let i = 0; i < currentWeekNumber; i++) {
+      this.sheet.getRange(newStudentRow, this.currentTermAttendanceColumnNum+i).setValue("X");
+    }
+
+    //Sort the sheet afterwards so the new pupil will be in the correct place
+    this.clean();
+  }
 }
 
 function newAttendanceSheet(attendanceSheet) {
@@ -459,5 +527,5 @@ function newAttendanceSheet(attendanceSheet) {
 }
 
 function TermAttendanceSheetName() {
-  return "Master sheet"
+  return AttendanceManager.sheetName;
 }
