@@ -21,11 +21,13 @@ class NewStudentManager {
 
 class StudentProcessor extends NewStudentManager {
     activeRow: number;
+    mainSS: GoogleAppsScript.Spreadsheet.Spreadsheet;
 
 
     constructor(sheet, activeRow:number) {
         super(sheet);
         this.activeRow = activeRow;
+        this.mainSS = SpreadsheetApp.openByUrl((new DatabaseData(this.sheet.getParent())).getVariable("Main Database SS"));
     }
 
     clearLine() {
@@ -92,7 +94,7 @@ class StudentProcessor extends NewStudentManager {
         console.log("The new student information for weekly lessons is: " + JSON.stringify(newStudentInfo));
 
         // Add the student to the weekly lessons sheet
-        let attendanceManager = AttendanceManager.getObjFromSS(this.sheet.getParent());
+        let attendanceManager = AttendanceManager.getObjFromSS(this.mainSS);
         attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Number, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Instrument_hire, newStudentInfo.Tutor);
         
         // -----Email the parent and the tutor with confirmation-----
@@ -106,7 +108,7 @@ class StudentProcessor extends NewStudentManager {
         let body_template = templateSheet.getRange(2, 2).getValue();
 
         // Get recipient information
-        let tutor_email =  (new StaffDetails(this.sheet.getParent())).getEmail(newStudentInfo.Tutor);
+        let tutor_email =  (new StaffDetails(this.mainSS)).getEmail(newStudentInfo.Tutor);
 
         let emailer = Emails.newEmailer(subject_template, body_template);
 
