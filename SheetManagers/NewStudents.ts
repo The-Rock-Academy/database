@@ -6,8 +6,14 @@ class NewStudentManager {
         this.sheet = sheet;
     }
 
-    getColumn(name:string) {
-        let column = this.sheet.getRange(2, 1, 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name) + 1;
+    getColumn(name:string, category:string="", row:number=2) {
+        let column;
+        if (category == "") {
+            column = this.sheet.getRange(row, 1, 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name) + 1;
+        } else {
+            let categoryHeader = this.sheet.getRange(1,this.getColumn(category, "", 1));
+            column = this.sheet.getRange(row, categoryHeader.getColumn(), 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name)  + categoryHeader.getColumn();
+        }
         if (column == 0) {
             throw new Error("The column " + name + " does not exist");
         } else {
@@ -34,10 +40,11 @@ class StudentProcessor extends NewStudentManager {
         this.sheet.getRange(this.activeRow, 1, 1, this.sheet.getLastColumn()).clear();
     }
 
-    filterBlankColumns(columnNames: string[]): {} {
+    filterBlankColumns(columnNames: string[], category: string): {} {
         const result = {};
         columnNames.forEach((name) => {
-            let range = this.sheet.getRange(this.activeRow, this.getColumn(name));
+            let range = this.sheet.getRange(this.activeRow, this.getColumn(name, category));
+
             if (range.isBlank()) {
                 throw new Error("The " + name + " column is blank, please fill it in");
             } else {
@@ -50,7 +57,7 @@ class StudentProcessor extends NewStudentManager {
     getGenericInfo(): {} {
         let genericInfoColumnNames: string[] = ["Name", "Email", "Number", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
-        return this.filterBlankColumns(genericInfoColumnNames);
+        return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
 
     processNewStudent() {
@@ -81,8 +88,38 @@ class StudentProcessor extends NewStudentManager {
     processNewSHPSudent() {
         throw new Error("Method not implemented.");
     }
+
     processNewBandSchoolStudent() {
-        throw new Error("Method not implemented.");
+        let genericInformation = this.getGenericInfo();
+
+        let bandSchoolInformationColumnNames: string[] = ["Day", "Time", "Tutor"];
+        let bandSchoolInfo = this.filterBlankColumns(bandSchoolInformationColumnNames, "Band School");
+
+        const newStudentInfo = {...genericInformation, ...bandSchoolInfo};
+
+        console.log("The new student information for band school is: " + JSON.stringify(newStudentInfo));
+
+        // Add pupil to the band school sheet
+        let bandSchool = (new BandSchoolManager(SpreadsheetApp.openByUrl((new DatabaseData(this.mainSS)).getVariable("Band School ID")).getSheetByName(BandSchoolManager.sheetName()), ""))
+
+        let dayTime = newStudentInfo.Day + " " + newStudentInfo.Time;
+        bandSchool.newStudent(dayTime, newStudentInfo.Student_name, newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Number, newStudentInfo.Instruments_interested_in, newStudentInfo.Billing_Company);
+
+        // Send confirmation email
+        let templateSheet = this.sheet.getParent().getSheetByName("BandSchoolConfirmationTemplate");
+        if (templateSheet == null) {
+            throw new Error("The template sheet BandSchoolConfirmationTemplate does not exist");
+        }
+        let subject_template = templateSheet.getRange(1, 2).getValue();
+        let body_template = templateSheet.getRange(2, 2).getValue();
+
+        // Get recipient information
+        let tutor_email =  (new StaffDetails(this.mainSS)).getEmail(newStudentInfo.Tutor);
+
+        let emailer = Emails.newEmailer(subject_template, body_template);
+
+        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, []);
+
     }
 
     prcoessNewWeeklyStudent() {
@@ -90,7 +127,7 @@ class StudentProcessor extends NewStudentManager {
         let genericInformation = this.getGenericInfo();
 
         let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Instrument hire", "Tutor"];
-        let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames);
+        let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, "Weekly Lessons");
 
         const newStudentInfo = {...genericInformation, ...weeklyLessonInfo}
 

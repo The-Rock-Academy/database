@@ -4,7 +4,8 @@ class BandSchoolManager extends DatabaseSheetManager {
     }
 
     static newFromSS(ss) {
-        return new BandSchoolManager(ss.getSheetByName(BandSchoolManager.sheetName()));
+        let sheet = ss.getSheetByName(BandSchoolManager.sheetName());
+        return new BandSchoolManager(sheet);
     }
 
     constructor(sheet, currentTerm) {
@@ -117,7 +118,36 @@ class BandSchoolManager extends DatabaseSheetManager {
           console.warn("You have tried to clear a invoice number that couldnt be found.\n" + err);
         }
     }
+
+    newStudent(dayTime, Student_name, Parent_name, email, phone, instrument, billingCompany) {
+        // Find row to add the new pupil too.
+
+        let dayTimeSearcher = this.sheet.getRange(3, this.getColumn("Phone"), this.sheet.getMaxRows(), 1).createTextFinder(dayTime);
+
+        let dayTimeRow = dayTimeSearcher.findNext();
+        if (dayTimeRow == null) {
+            throw new Error("Could not find the day time " + dayTime + " in the sheet " + this.sheet.getName());
+        }
+        dayTimeRow = dayTimeRow.getRow();
+
+        let instrumentCol = this.getColumn("Instrument");
+
+        let nextFreeRow = this.sheet.getRange(dayTimeRow+1, instrumentCol).getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow()+1;
+
+        // Add the new pupil to the sheet.
+        this.sheet.insertRowBefore(nextFreeRow);
+
+        this.sheet.getRange(nextFreeRow, this.getColumn("Student name")).setValue(Student_name);
+        this.sheet.getRange(nextFreeRow, this.getColumn("Guardian")).setValue(Parent_name);
+        this.sheet.getRange(nextFreeRow, this.getColumn("Email")).setValue(email);
+        this.sheet.getRange(nextFreeRow, this.getColumn("Phone")).setValue(phone);
+        this.sheet.getRange(nextFreeRow, this.getColumn("Pupils Billing Company")).setValue(billingCompany);
+        this.sheet.getRange(nextFreeRow, this.getColumn("Instrument")).setValue(instrument);
+    
+    }
 }
+
+
 
 function newBandSchoolSheet(sheet) {
     return new BandSchoolManager(sheet);
