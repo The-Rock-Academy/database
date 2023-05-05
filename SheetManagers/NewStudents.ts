@@ -54,10 +54,13 @@ class StudentProcessor extends NewStudentManager {
     }
 
     processNewStudent() {
-        //Look at what the student is interested in
-        let weeklyLessons = this.sheet.getRange(this.activeRow, this.getColumn("Are you interested in Weekly lessons?")).getValue() == "Yes";
-        let bandSchool = this.sheet.getRange(this.activeRow, this.getColumn("Are you interested in Band School?")).getValue() == "Yes";
-        let shp = this.sheet.getRange(this.activeRow, this.getColumn("Are you interested in the School holiday program?")).getValue() == "Yes";
+        //Find out what services they are interested in
+        let formResponse = this.sheet.getRange(this.activeRow, this.getColumn("What services are you interested in?")).getValue();
+
+        let weeklyLessons = formResponse.includes("Weekly Mobile music lessons");
+        let bandSchool = formResponse.includes("Band School");
+        let shp = formResponse.includes("School Holiday program");
+
 
         console.log("This student is interested in weekly lessons: " + weeklyLessons + ", band school: " + bandSchool + ", and the school holiday program: " + shp);
 
@@ -96,6 +99,23 @@ class StudentProcessor extends NewStudentManager {
         // Add the student to the weekly lessons sheet
         let attendanceManager = AttendanceManager.getObjFromSS(this.mainSS);
         attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Number, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Instrument_hire, newStudentInfo.Tutor);
+
+        // Get the PDF booklets
+        let instruments:string[] = newStudentInfo.Instruments_interested_in.split(",").map(s => s.trim());
+
+        let bookletFolder = DriveApp.getFolderById((new DatabaseData(this.sheet.getParent())).getVariable("Instrument booklets"));
+        let bookletFolderFiles = bookletFolder.getFiles();
+
+        let instrumentBooklets = [];
+
+        while (bookletFolderFiles.hasNext()) {
+            let file = bookletFolderFiles.next();
+            let is_match = instruments.find(file_name => file.getName().includes(file_name));
+            if (is_match != undefined) {
+                instrumentBooklets.push(file.getAs("application/pdf"));
+            }
+        }
+
         
         // -----Email the parent and the tutor with confirmation-----
 
@@ -112,7 +132,7 @@ class StudentProcessor extends NewStudentManager {
 
         let emailer = Emails.newEmailer(subject_template, body_template);
 
-        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, []);
+        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, [], instrumentBooklets);
     }
     
 }
