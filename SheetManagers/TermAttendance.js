@@ -94,6 +94,14 @@ class AttendanceManager extends DatabaseSheetManager {
   // -------------------------------------------------------------------------------------------------------
   // These methods here are all about dealing with the invoices in the attendance sheet.
 
+  sendReminder(range) {
+    let templateSheet = this.sheet.getParent().getSheetByName(InvoiceCollector.templateName);
+    let invoiceColumn = this.getColumn("Previous Invoice");
+    let invoiceCollector = new InvoiceCollector(this.sheet, [templateSheet.getRange(1,2).getValue(), templateSheet.getRange(2,2).getValue()], invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
+
+    invoiceCollector.sendReminders(range);
+  }
+
   // ------------------
   // Non term length invoices
   // ------------------
@@ -459,5 +467,5 @@ function newAttendanceSheet(attendanceSheet) {
 }
 
 function TermAttendanceSheetName() {
-  return "Master sheet"
+  return AttendanceManager.sheetName();
 }
