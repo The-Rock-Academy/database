@@ -518,6 +518,33 @@ class AttendanceManager extends DatabaseSheetManager {
     //Sort the sheet afterwards so the new pupil will be in the correct place
     this.clean();
   }
+
+  confirmTrialLesson(row) {
+    let attendanceRow = this.sheet.getRange(row, this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks).getValues()[0];
+
+    // Check if the pupil has a trial lesson booked.
+    if (!attendanceRow.includes("T")) {
+      throw "This pupil does not have a trial lesson booked."
+    }
+
+    let trialLessonWeek = attendanceRow.indexOf("T") + 1;
+    let trialLessonDate = this.sheet.getRange(2, this.currentTermAttendanceColumnNum + trialLessonWeek - 1).getValue();
+
+    let templateSheet = this.sheet.getParent().getSheetByName("Trial Confirmation template");
+    let emailer = Emails.newEmailer(
+      templateSheet.getRange(1,2).getValue(),
+      templateSheet.getRange(2,2).getValue());
+
+    emailer.sendEmail([this.sheet.getRange(row, this.getColumn("Email")).getValue()], {
+      Parent_name: this.sheet.getRange(row, this.getColumn("Guardian")).getValue(),
+      Student_name: this.sheet.getRange(row, this.getColumn("Student Name")).getValue(),
+      Lesson_date: trialLessonDate.toLocaleDateString("en-NZ"),
+      Tutor_name: this.sheet.getRange(row, this.getColumn("Teacher")).getValue()
+    }
+    );
+
+    this.sheet.getParent().toast("Confirmation sent");
+  }
 }
 
 function newAttendanceSheet(attendanceSheet) {
@@ -525,5 +552,5 @@ function newAttendanceSheet(attendanceSheet) {
 }
 
 function TermAttendanceSheetName() {
-  return AttendanceManager.sheetName;
+  return AttendanceManager.sheetName();
 }
