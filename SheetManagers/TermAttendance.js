@@ -484,7 +484,7 @@ class AttendanceManager extends DatabaseSheetManager {
    * @param {string} address 
    * @param {string} preferedDay 
    */
-  addStudent(parentName, email, phone, address, pupilName, billingCompany,  preferedDay, lessonLength, costOfLesson, instrumentHire, tutor) {
+  addStudent(parentName, email, phone, address, pupilName, billingCompany,  preferedDay, lessonLength, costOfLesson, instrumentHire, tutor, instrument) {
     //Create the new row
     let newStudentRow = this.getInactiveRowNumber();
     this.sheet.insertRowAfter(newStudentRow-1);
@@ -501,6 +501,7 @@ class AttendanceManager extends DatabaseSheetManager {
     this.sheet.getRange(newStudentRow, this.getColumn("Phone")).setValue(phone);
     this.sheet.getRange(newStudentRow, this.getColumn("Suburb/Address")).setValue(address);
     this.sheet.getRange(newStudentRow, this.getColumn("Day")).setValue(preferedDay);
+    this.sheet.getRange(newStudentRow, this.getColumn("Instrument")).setValue(instrument);
     
     //Set the status to active
     this.sheet.getRange(newStudentRow, this.getColumn("Status")).setValue("Active");
