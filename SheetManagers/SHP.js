@@ -4,7 +4,7 @@ class SHPManager extends DatabaseSheetManager {
     }
 
     static newFromSS(ss, currentTerm) {
-        return new SHPManager(ss.getSheetByName(SHPManager.sheetName()), currentTerm);
+        return (new SHPManager(ss.getSheetByName(SHPManager.sheetName()), currentTerm));
     }
 
     constructor(sheet, currentTerm) {
@@ -83,10 +83,10 @@ class SHPManager extends DatabaseSheetManager {
         this.clearInvoiceNumber(invoiceNumber);
     }
 
-    prepareInvoice(row, send = false) {
+    prepareInvoice(row, send = false, automated = false) {
 
         let invoiceSheet = Invoices.newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
-        let ui = SpreadsheetApp.getUi();
+        
         let activeRow = row;
         
         // --------------------------------
@@ -99,22 +99,25 @@ class SHPManager extends DatabaseSheetManager {
         // Check if invoice has already been sent.
         let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow)
         let updating = false;
-        if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow).date.isBlank()) {
-          let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the SHP.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
-          if (answer == ui.Button.NO) {
-              return
-          } else {
-              updating = true
-          }
-        }
-    
-        // Check if the invoice sender is already occupied.
-        if (invoiceSheet.isInvoiceLoaded()) {
-            let answer = ui.alert("It appears the invoice sender already has an invoice loaded. Would you like to overide that invoice?", ui.ButtonSet.YES_NO)
+        if (!automated) { //Dont check if things are dupes or the invoice sender is full if this is automated.
+            let ui = SpreadsheetApp.getUi();
+            if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow).date.isBlank()) {
+            let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the SHP.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
             if (answer == ui.Button.NO) {
-            return
+                return
             } else {
-            invoiceSheet.clearInvoice();
+                updating = true
+            }
+            }
+        
+            // Check if the invoice sender is already occupied.
+            if (invoiceSheet.isInvoiceLoaded()) {
+                let answer = ui.alert("It appears the invoice sender already has an invoice loaded. Would you like to overide that invoice?", ui.ButtonSet.YES_NO)
+                if (answer == ui.Button.NO) {
+                return
+                } else {
+                invoiceSheet.clearInvoice();
+                }
             }
         }
     
@@ -139,8 +142,7 @@ class SHPManager extends DatabaseSheetManager {
         let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
     
         if (!(parentName && email && billingCompany && pupilName && price && (numberOfLessons || numberOfLessons  == 0) &&this.currentTerm)) {
-            SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
-            return;
+            throw new Error("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.");
         }
         // -----------------------------
         // Create and load invoice into the invoice sheet
@@ -175,6 +177,51 @@ class SHPManager extends DatabaseSheetManager {
     */
     getInvoiceNumberOfRow(rowNumber) {
         return this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue()
+    }
+
+    addBooking(Student_name, Parent_name, email, phone, days, notes, Emergency_contact) {
+        this.sheet.insertRowBefore(4);
+
+        //Add in price formula
+    
+
+        // Using rowRange to help with the problem of this being done at the same time. I.e if we have people submiting a form at the same time.
+        let rowRange = this.sheet.getRange(4, 1, 1, this.sheet.getLastColumn());
+
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Price")).setFormula("=IF(COUNTA(Z4:AD4)=5, 350, counta(Z4:AD4) * 75)");
+
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Student Name")).setValue(Student_name);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Guardian Name")).setValue(Parent_name);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Email")).setValue(email);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Phone")).setValue(phone);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Emergency Contact")).setValue(Emergency_contact);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Notes and Allergies")).setValue(notes);
+
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Mon Day 1"), 1, 5).setValues([days.map(day => {
+            if (day) {
+                return "x"
+            } else {
+                return ""
+        }}
+        )])
+
+        // Fill in the billing company.
+
+        let previousBillingCompany = this.sheet.getRange(rowRange.getRow()+1, this.getColumn("Pupils Billing Company")).getValue();
+        switch (previousBillingCompany) {
+            case "TRA":
+                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("GML");
+                break;
+            case "GML":
+                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TSA");
+                break;
+            case "TSA":
+                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
+                break;
+            default:
+                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
+        }
+        this.prepareInvoice(rowRange.getRow(), true, true);
     }
 }
 

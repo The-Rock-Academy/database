@@ -1,11 +1,11 @@
 {
-  "name": "database",
+  "name": "tra_database",
   "version": "1.0.0",
-  "description": "",
+  "description": "All the code that is needed to run the tra systems",
   "main": "Database.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "james thompson",
   "license": "ISC"
 }
