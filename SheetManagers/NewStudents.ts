@@ -2,16 +2,19 @@ class NewStudentManager {
     static sheetName: string = "New Students";
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
 
+    static columnHeaderRow: number = 1;
+    static columnCategoryRow: number = 2;
+
     constructor(sheet) {
         this.sheet = sheet;
     }
 
-    getColumn(name:string, category:string="", row:number=2) {
+    getColumn(name:string, category:string="", row:number=NewStudentManager.columnHeaderRow) {
         let column;
         if (category == "") {
             column = this.sheet.getRange(row, 1, 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name) + 1;
         } else {
-            let categoryHeader = this.sheet.getRange(1,this.getColumn(category, "", 1));
+            let categoryHeader = this.sheet.getRange(NewStudentManager.columnCategoryRow,this.getColumn(category, "", NewStudentManager.columnCategoryRow));
             column = this.sheet.getRange(row, categoryHeader.getColumn(), 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name)  + categoryHeader.getColumn();
         }
         if (column == 0) {
@@ -53,20 +56,32 @@ class StudentProcessor extends NewStudentManager {
         });
         return result;
     }
+    
+    notifyOfNewStudent() {
+        let templateSheet = this.sheet.getParent().getSheetByName("PupilEnquiryFormSubmissionNotificationTemplate");
+
+        let enquiryInformation = this.filterBlankColumns(["Name", "Email", "Phone", "Suburb", "Instruments interested in", "Services interested in", "Message"], "General");
+
+        let emailer = Emails.newEmailer(templateSheet.getRange(1, 2).getValue(), templateSheet.getRange(2, 2).getValue());
+
+        let emailToSendTo = (new DatabaseData(this.mainSS)).getVariable("New Enquiry notification email");
+
+        emailer.sendEmail([emailToSendTo], enquiryInformation, [], [], enquiryInformation["Email"]);
+    }
 
     getGenericInfo(): {} {
-        let genericInfoColumnNames: string[] = ["Name", "Email", "Number", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
+        let genericInfoColumnNames: string[] = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
 
     processNewStudent() {
         //Find out what services they are interested in
-        let formResponse = this.sheet.getRange(this.activeRow, this.getColumn("What services are you interested in?")).getValue();
+        let formResponse = this.sheet.getRange(this.activeRow, this.getColumn("Services interested in")).getValue();
 
-        let weeklyLessons = formResponse.includes("Weekly Mobile music lessons");
+        let weeklyLessons = formResponse.includes("Mobile Lessons");
         let bandSchool = formResponse.includes("Band School");
-        let shp = formResponse.includes("School Holiday program");
+        let shp = formResponse.includes("School Holiday Programme");
 
 
         console.log("This student is interested in weekly lessons: " + weeklyLessons + ", band school: " + bandSchool + ", and the school holiday program: " + shp);
