@@ -99,9 +99,8 @@ class AttendanceManager extends DatabaseSheetManager {
   // These methods here are all about dealing with the invoices in the attendance sheet.
 
   sendReminder(range) {
-    let templateSheet = this.sheet.getParent().getSheetByName(InvoiceCollector.templateName);
     let invoiceColumn = this.getColumn("Previous Invoice");
-    let invoiceCollector = new InvoiceCollector(this.sheet, [templateSheet.getRange(1,2).getValue(), templateSheet.getRange(2,2).getValue()], invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
+    let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
 
     invoiceCollector.sendReminders(range);
   }
@@ -539,10 +538,8 @@ class AttendanceManager extends DatabaseSheetManager {
     let trialLessonWeek = attendanceRow.indexOf("T") + 1;
     let trialLessonDate = this.sheet.getRange(2, this.currentTermAttendanceColumnNum + trialLessonWeek - 1).getValue();
 
-    let templateSheet = this.sheet.getParent().getSheetByName("Trial Confirmation template");
-    let emailer = Emails.newEmailer(
-      templateSheet.getRange(1,2).getValue(),
-      templateSheet.getRange(2,2).getValue());
+    let templateSS = (new DatabaseData(this.sheet.getParent())).getTemplateSS();
+    let emailer = Emails.newEmailer(templateSS, "Trail lesson confirmation");
 
     emailer.sendEmail([this.sheet.getRange(row, this.getColumn("Email")).getValue()], {
       Parent_name: this.sheet.getRange(row, this.getColumn("Guardian")).getValue(),
@@ -551,6 +548,8 @@ class AttendanceManager extends DatabaseSheetManager {
       Tutor_name: this.sheet.getRange(row, this.getColumn("Teacher")).getValue()
     }
     );
+
+    
 
     this.sheet.getParent().toast("Confirmation sent");
   }

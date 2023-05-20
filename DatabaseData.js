@@ -20,6 +20,11 @@ class DatabaseData {
       return this.sheet.getRange(textFinderResults[0].getRow(), 2).getValue();
     }
   }
+
+  //Various things that are designed to help do common tasks in the database
+  getTemplateSS() {
+    return SpreadsheetApp.openByUrl(this.getVariable("Email templates SS"));
+  }
 }
 
 function newDatabaseData(database) {
