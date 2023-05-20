@@ -2,14 +2,14 @@ class InvoiceCollector {
     sent: number;
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
     paid: number;
-    static templateName: string = "Invoice Reminder Template";
-    template: string[];
+    static templateName: string = "Invoice Reminder";
+    templateSS: GoogleAppsScript.Spreadsheet.Spreadsheet;
 
-    constructor(sheet, template, sent, paid, parent_name, parent_email, pupil_name, invoice_number, invoice_amount, reminder_date) {
+    constructor(sheet, sent, paid, parent_name, parent_email, pupil_name, invoice_number, invoice_amount, reminder_date) {
         this.sheet = sheet;
         this.sent = sent;
         this.paid = paid;
-        this.template=template;
+        this.templateSS= (new DatabaseData(this.sheet.getParent())).getTemplateSS();
         this.parent_name = parent_name;
         this.parent_email = parent_email;
         this.pupil_name = pupil_name;
@@ -33,7 +33,7 @@ class InvoiceCollector {
                 if (invoiceFolder.invoiceExists(invoiceNumber)) {
                     let invoicePDF = invoiceFolder.getInvoice(invoiceNumber);
                     
-                    let emailer = Emails.newEmailer(this.template[0], this.template[1]);
+                    let emailer = Emails.newEmailer(this.templateSS, InvoiceCollector.templateName);
                     let data = this.sheet.getRange(startingRow+index,1,1,this.sheet.getLastColumn()).getValues()[0];
                     emailer.sendEmail([data[this.parent_email-1]], {
                         "Parent_name": data[this.parent_name-1],
@@ -41,7 +41,7 @@ class InvoiceCollector {
                         "Invoice_amount": data[this.invoice_amount-1],
                         "Invoice_number": data[this.invoice_number-1],
                         "Sent_date": (new Date(data[this.sent-1])).toLocaleDateString("en-NZ")
-                    }, [],[invoicePDF]);
+                    },[invoicePDF]);
 
                     this.sheet.getRange(startingRow+index,this.reminder_date).setValue((new Date()).toLocaleDateString("en-NZ"));
                 } else {
