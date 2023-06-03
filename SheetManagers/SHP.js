@@ -42,7 +42,7 @@ class SHPManager extends DatabaseSheetManager {
         headerRow.setFontWeight("bold")
     }
 
-    updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate) {
+    updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {
         let invoiceRange = this.getInvoiceRanges(invoiceNumber);
         invoiceRange.amount.setValue(totalCost);
         invoiceRange.date.setValue(sentDate)

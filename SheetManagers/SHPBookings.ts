@@ -1,11 +1,14 @@
 class SHPBookings {
-    static sheetName: string = "School Holiday Program bookings";
+    static sheetName: string = "School Holiday Programme bookings";
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
     ss: GoogleAppsScript.Spreadsheet.Spreadsheet;
 
     constructor(ss) {
         this.ss = ss;
         this.sheet = ss.getSheetByName(SHPBookings.sheetName);
+        if (this.sheet == null) {
+            throw new Error("The sheet '" + SHPBookings.sheetName + "' does not exist");
+        }
     }
 
     getColumn(name:string) {
@@ -20,12 +23,15 @@ class SHPBookings {
     // Take the form submission and add booking to the SHP sheet.
     formSubmission() {
         let latestRow = this.sheet.getLastRow();
+        if (latestRow == 1) {
+            console.log("No bookings to process");
+            return;
+        }
         let pupilInformation = this.sheet.getRange(latestRow, 1, 1, this.sheet.getLastColumn()).getValues()[0];
 
 
         let days = pupilInformation[7].split(", ");
         let days_array = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
-            console.log("Looking at day: " + day + " and seeing if it is in " + days + ". Turns out it is " + days.includes(day) + ".");
             return days.includes(day) ? true : false;
         });
 
