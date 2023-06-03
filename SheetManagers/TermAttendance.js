@@ -99,9 +99,8 @@ class AttendanceManager extends DatabaseSheetManager {
   // These methods here are all about dealing with the invoices in the attendance sheet.
 
   sendReminder(range) {
-    let templateSheet = this.sheet.getParent().getSheetByName(InvoiceCollector.templateName);
     let invoiceColumn = this.getColumn("Previous Invoice");
-    let invoiceCollector = new InvoiceCollector(this.sheet, [templateSheet.getRange(1,2).getValue(), templateSheet.getRange(2,2).getValue()], invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
+    let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
 
     invoiceCollector.sendReminders(range);
   }
@@ -330,12 +329,10 @@ class AttendanceManager extends DatabaseSheetManager {
     //Count lessons up until end of term simple
     console.log("Week number is: " + weekNumber);
     let lessonsToInvoice = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return (range.isBlank() || range.getValue() == "P") && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     });
 
     let trialLessons = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return range.getValue() == "T" && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     }).length
     console.log("this is how many trialLessons" + trialLessons)
@@ -401,9 +398,9 @@ class AttendanceManager extends DatabaseSheetManager {
     }
   }
 
-  updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate) {
+  updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {
     this.addInvoiceInfo(invoiceNumber, totalCost, sentDate);
-    this.updateAttendanceToInvoiced(invoiceNumber);
+    this.updateAttendanceToInvoiced(invoiceNumber, numberOfLessons);
   }
 
   clearSheetAfterClearingInvoiceSender(invoiceNumber) {
@@ -539,10 +536,8 @@ class AttendanceManager extends DatabaseSheetManager {
     let trialLessonWeek = attendanceRow.indexOf("T") + 1;
     let trialLessonDate = this.sheet.getRange(2, this.currentTermAttendanceColumnNum + trialLessonWeek - 1).getValue();
 
-    let templateSheet = this.sheet.getParent().getSheetByName("Trial Confirmation template");
-    let emailer = Emails.newEmailer(
-      templateSheet.getRange(1,2).getValue(),
-      templateSheet.getRange(2,2).getValue());
+    let templateSS = (new DatabaseData(this.sheet.getParent())).getTemplateSS();
+    let emailer = Emails.newEmailer(templateSS, "Trail lesson confirmation");
 
     emailer.sendEmail([this.sheet.getRange(row, this.getColumn("Email")).getValue()], {
       Parent_name: this.sheet.getRange(row, this.getColumn("Guardian")).getValue(),
@@ -551,6 +546,8 @@ class AttendanceManager extends DatabaseSheetManager {
       Tutor_name: this.sheet.getRange(row, this.getColumn("Teacher")).getValue()
     }
     );
+
+    
 
     this.sheet.getParent().toast("Confirmation sent");
   }

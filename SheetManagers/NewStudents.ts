@@ -24,8 +24,27 @@ class NewStudentManager {
         }
     }
 
+    clean() {
+        console.log("Cleaning " + this.sheet.getName());
+        let tutorNameRange = this.sheet.getParent().getSheetByName("Staff").getRange("B3:B55");
 
-        
+        this.sheet.getRange(3,this.getColumn("Billing Company"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["TRA", "GML", "TSA"]).build());
+
+        this.sheet.getRange(3,this.getColumn("Tutor", "Weekly Lessons"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+        this.sheet.getRange(3,this.getColumn("Tutor", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+
+        this.sheet.getRange(3,this.getColumn("Day", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["MON", "TUE", "WED", "THU", "FRI"]).build());
+        this.sheet.getRange(3,this.getColumn("Time", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["4pm", "5pm"]).build());
+    
+        ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
+            this.sheet.getRange(3,this.getColumn(day, "School Holiday Programme"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
+        };
+        console.log("Cleaned " + this.sheet.getName());
+    }
+}
+
+function NewStudentManagerFromSS(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+    return new NewStudentManager(ss.getSheetByName(NewStudentManager.sheetName));
 }
 
 class StudentProcessor extends NewStudentManager {
@@ -58,19 +77,20 @@ class StudentProcessor extends NewStudentManager {
     }
     
     notifyOfNewStudent() {
-        let templateSheet = this.sheet.getParent().getSheetByName("PupilEnquiryFormSubmissionNotificationTemplate");
+        let templateSS = (new DatabaseData(this.mainSS)).getTemplateSS();
+
 
         let enquiryInformation = this.filterBlankColumns(["Name", "Email", "Phone", "Suburb", "Instruments interested in", "Services interested in", "Message"], "General");
 
-        let emailer = Emails.newEmailer(templateSheet.getRange(1, 2).getValue(), templateSheet.getRange(2, 2).getValue());
+        let emailer = Emails.newEmailer(templateSS, "PupilEnquiryFormSubmissionNotification");
 
         let emailToSendTo = (new DatabaseData(this.mainSS)).getVariable("New Enquiry notification email");
 
-        emailer.sendEmail([emailToSendTo], enquiryInformation, [], [], enquiryInformation["Email"]);
+        emailer.sendEmail([emailToSendTo], enquiryInformation, [], enquiryInformation["Email"]);
     }
 
     getGenericInfo(): {} {
-        let genericInfoColumnNames: string[] = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
+        let genericInfoColumnNames: string[] = ["Message", "Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
@@ -101,7 +121,20 @@ class StudentProcessor extends NewStudentManager {
         this.clearLine();
     }
     processNewSHPSudent() {
-        throw new Error("Method not implemented.");
+
+        let genericInformation = this.getGenericInfo();
+
+        let shpInformationColumnNames: string[] = ["Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
+        let shpInfo = this.filterBlankColumns(shpInformationColumnNames, "School Holiday Programme");
+
+        let shpManager = new SHPManager(this.sheet.getParent().getSheetByName(SHPManager.sheetName()));
+        shpManager.addBooking(genericInformation.Student_name,
+            genericInformation.Name,
+            genericInformation.Email,
+            genericInformation.Phone, 
+            [shpInfo.Mon, shpInfo.Tue, shpInfo.Wed, shpInfo.Thu, shpInfo.Fri],
+            genericInformation.Message,
+            shpInfo.Emergency_contact);
     }
 
     processNewBandSchoolStudent() {
@@ -118,22 +151,17 @@ class StudentProcessor extends NewStudentManager {
         let bandSchool = (new BandSchoolManager(SpreadsheetApp.openByUrl((new DatabaseData(this.mainSS)).getVariable("Band School ID")).getSheetByName(BandSchoolManager.sheetName()), ""))
 
         let dayTime = newStudentInfo.Day + " " + newStudentInfo.Time;
-        bandSchool.newStudent(dayTime, newStudentInfo.Student_name, newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Number, newStudentInfo.Instruments_interested_in, newStudentInfo.Billing_Company);
+        bandSchool.newStudent(dayTime, newStudentInfo.Student_name, newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Phone, newStudentInfo.Instruments_interested_in, newStudentInfo.Billing_Company);
 
         // Send confirmation email
-        let templateSheet = this.sheet.getParent().getSheetByName("BandSchoolConfirmationTemplate");
-        if (templateSheet == null) {
-            throw new Error("The template sheet BandSchoolConfirmationTemplate does not exist");
-        }
-        let subject_template = templateSheet.getRange(1, 2).getValue();
-        let body_template = templateSheet.getRange(2, 2).getValue();
 
         // Get recipient information
         let tutor_email =  (new StaffDetails(this.mainSS)).getEmail(newStudentInfo.Tutor);
 
-        let emailer = Emails.newEmailer(subject_template, body_template);
+        let emailer = Emails.newEmailer(
+            (new DatabaseData(this.mainSS)).getTemplateSS(), "Band School Enrolment Confirmation");
 
-        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, []);
+        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo);
 
     }
 
@@ -171,20 +199,12 @@ class StudentProcessor extends NewStudentManager {
         
         // -----Email the parent and the tutor with confirmation-----
 
-        // Get the templates
-        let templateSheet = this.sheet.getParent().getSheetByName("MobilePupilConfirmationTemplate");
-        if (templateSheet == null) {
-            throw new Error("The template sheet MobilePupilConfirmationTemplate does not exist");
-        }
-        let subject_template = templateSheet.getRange(1, 2).getValue();
-        let body_template = templateSheet.getRange(2, 2).getValue();
-
         // Get recipient information
         let tutor_email =  (new StaffDetails(this.mainSS)).getEmail(newStudentInfo.Tutor);
 
-        let emailer = Emails.newEmailer(subject_template, body_template);
+        let emailer = Emails.newEmailer((new DatabaseData(this.mainSS)).getTemplateSS(), "Mobile Pupil Confirmation");
 
-        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, [], instrumentBooklets);
+        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, instrumentBooklets);
     }
     
 }
