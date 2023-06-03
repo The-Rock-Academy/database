@@ -1,0 +1,25 @@
+name: Clasp Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Clasp Action
+      uses: daikikatsuragawa/clasp-action@v1.1.0
+      with:
+        accessToken: ${{ secrets.ACCESS_TOKEN }}
+        idToken: ${{ secrets.ID_TOKEN }}
+        refreshToken: ${{ secrets.REFRESH_TOKEN }}
+        clientId: ${{ secrets.CLIENT_ID }}
+        clientSecret: ${{ secrets.CLIENT_SECRET }}
+        scriptId: ${{ secrets.SCRIPT_ID }}
+        command: 'deploy'
