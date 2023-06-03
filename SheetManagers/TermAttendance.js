@@ -329,12 +329,10 @@ class AttendanceManager extends DatabaseSheetManager {
     //Count lessons up until end of term simple
     console.log("Week number is: " + weekNumber);
     let lessonsToInvoice = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return (range.isBlank() || range.getValue() == "P") && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     });
 
     let trialLessons = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      console.log("Looking at range: " + range.getValue() + " which is index: " + index);
       return range.getValue() == "T" && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
     }).length
     console.log("this is how many trialLessons" + trialLessons)
@@ -400,9 +398,9 @@ class AttendanceManager extends DatabaseSheetManager {
     }
   }
 
-  updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate) {
+  updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {
     this.addInvoiceInfo(invoiceNumber, totalCost, sentDate);
-    this.updateAttendanceToInvoiced(invoiceNumber);
+    this.updateAttendanceToInvoiced(invoiceNumber, numberOfLessons);
   }
 
   clearSheetAfterClearingInvoiceSender(invoiceNumber) {

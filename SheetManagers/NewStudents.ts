@@ -24,8 +24,27 @@ class NewStudentManager {
         }
     }
 
+    clean() {
+        console.log("Cleaning " + this.sheet.getName());
+        let tutorNameRange = this.sheet.getParent().getSheetByName("Staff").getRange("B3:B55");
 
-        
+        this.sheet.getRange(3,this.getColumn("Billing Company"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["TRA", "GML", "TSA"]).build());
+
+        this.sheet.getRange(3,this.getColumn("Tutor", "Weekly Lessons"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+        this.sheet.getRange(3,this.getColumn("Tutor", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+
+        this.sheet.getRange(3,this.getColumn("Day", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["MON", "TUE", "WED", "THU", "FRI"]).build());
+        this.sheet.getRange(3,this.getColumn("Time", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["4pm", "5pm"]).build());
+    
+        ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
+            this.sheet.getRange(3,this.getColumn(day, "School Holiday Programme"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
+        };
+        console.log("Cleaned " + this.sheet.getName());
+    }
+}
+
+function NewStudentManagerFromSS(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+    return new NewStudentManager(ss.getSheetByName(NewStudentManager.sheetName));
 }
 
 class StudentProcessor extends NewStudentManager {
@@ -71,7 +90,7 @@ class StudentProcessor extends NewStudentManager {
     }
 
     getGenericInfo(): {} {
-        let genericInfoColumnNames: string[] = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
+        let genericInfoColumnNames: string[] = ["Message", "Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
@@ -102,7 +121,20 @@ class StudentProcessor extends NewStudentManager {
         this.clearLine();
     }
     processNewSHPSudent() {
-        throw new Error("Method not implemented.");
+
+        let genericInformation = this.getGenericInfo();
+
+        let shpInformationColumnNames: string[] = ["Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
+        let shpInfo = this.filterBlankColumns(shpInformationColumnNames, "School Holiday Programme");
+
+        let shpManager = new SHPManager(this.sheet.getParent().getSheetByName(SHPManager.sheetName()));
+        shpManager.addBooking(genericInformation.Student_name,
+            genericInformation.Name,
+            genericInformation.Email,
+            genericInformation.Phone, 
+            [shpInfo.Mon, shpInfo.Tue, shpInfo.Wed, shpInfo.Thu, shpInfo.Fri],
+            genericInformation.Message,
+            shpInfo.Emergency_contact);
     }
 
     processNewBandSchoolStudent() {
