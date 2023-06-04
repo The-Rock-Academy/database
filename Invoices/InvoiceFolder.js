@@ -34,6 +34,9 @@ class InvoiceFolder {
     if (this.folder.getFilesByName(invoiceNumber + ".pdf").hasNext()) {
       return this.folder.getFilesByName(invoiceNumber + ".pdf").next();
     } else {
+      if (!this.folder.getFilesByName(invoiceNumber).hasNext()) {
+        throw new Error("Invoice " + invoiceNumber + " does not exist");
+      }
       return this.folder.getFilesByName(invoiceNumber).next();
     }
   }

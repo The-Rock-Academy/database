@@ -209,14 +209,17 @@ class AttendanceManager extends DatabaseSheetManager {
   /**
  * This will update the attendance section to make the P and I now be coloured
  */
-  updateAttendanceToInvoiced(invoiceNumber) {
-    console.log(this.getAttendanceRange(this.getInvoiceRow(invoiceNumber)).getValues())
-    this.getAttendanceRange(this.getInvoiceRow(invoiceNumber), true, !this.invoiceCurrent(invoiceNumber)).forEach(range => {
-      console.log("Checking: " + range.getValue());
+  updateAttendanceToInvoiced(invoiceNumber, numberOfLessons) {
+    console.log("Updating " + numberOfLessons + " cells to invoices. Cells are: " + this.getAttendanceRange(this.getInvoiceRow(invoiceNumber)).getValues())
+    let changedToInvoices = 0;
+    this.getAttendanceRange(this.getInvoiceRow(invoiceNumber), true, !this.invoiceCurrent(invoiceNumber)).forEach((range, i) => {
+      if (changedToInvoices >= numberOfLessons) { 
+        return
+      }
       if (range.getBackground() != "#c8c8c8" && ["T", "P", "I"].includes(range.getValue())) {
-        console.log("Updating colour")
         range.setBackground("#c8c8c8");
         if (range.getValue() == "I") range.clearContent()
+        changedToInvoices++;
       }
     })
   }
@@ -399,8 +402,10 @@ class AttendanceManager extends DatabaseSheetManager {
   }
 
   updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {
+    console.log(`Updating sheet after invoice ${invoiceNumber} is sent with cost: ${totalCost} and number of lessons ${numberOfLessons}` )
     this.addInvoiceInfo(invoiceNumber, totalCost, sentDate);
     this.updateAttendanceToInvoiced(invoiceNumber, numberOfLessons);
+    this.clearAttendanceNotInvoiced(invoiceNumber);
   }
 
   clearSheetAfterClearingInvoiceSender(invoiceNumber) {

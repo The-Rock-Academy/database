@@ -82,7 +82,7 @@ class SheetManager {
 
     let sentDate = new Date();
 
-    let invoiceNumber = this.invoiceRanges.getInvoiceNumberRange().getValue()
+    let invoiceNumber = this.invoiceRanges.getInvoiceNumberRange().getValue();
     let numberOfLessons = this.invoiceRanges.getNumberOfLessonsRange().getValue();
 
     this.databaseSheetManager.updateSheetAfterInvoiceSent(invoiceNumber, totalCost,sentDate, numberOfLessons);
