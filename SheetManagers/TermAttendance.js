@@ -276,7 +276,7 @@ class AttendanceManager extends DatabaseSheetManager {
 
 
   prepareInvoice(row, send = false, forTerm = true, previousTerm = false) {
-    let invoiceSheet = Invoices.newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
+    let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
     let ui = SpreadsheetApp.getUi();
     let activeRow = row;
     
@@ -368,7 +368,7 @@ class AttendanceManager extends DatabaseSheetManager {
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
+    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)

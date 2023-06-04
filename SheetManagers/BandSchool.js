@@ -14,7 +14,7 @@ class BandSchoolManager extends DatabaseSheetManager {
     }
 
     prepareInvoice(row, send = false) {
-        let invoiceSheet = Invoices.newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
+        let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
         let ui = SpreadsheetApp.getUi();
         let activeRow = row;
         
@@ -72,7 +72,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, 0, costOfLesson, "", billingCompany,this.currentTerm, "band");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, 0, costOfLesson, "", billingCompany,this.currentTerm, "band");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)

@@ -85,7 +85,7 @@ class SHPManager extends DatabaseSheetManager {
 
     prepareInvoice(row, send = false, automated = false) {
 
-        let invoiceSheet = Invoices.newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
+        let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
         
         let activeRow = row;
         
@@ -147,7 +147,7 @@ class SHPManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = Invoices.newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays " + this.findRowTerm(row), "shp");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays " + this.findRowTerm(row), "shp");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();

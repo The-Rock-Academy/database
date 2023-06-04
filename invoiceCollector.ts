@@ -29,7 +29,7 @@ class InvoiceCollector {
             if (element[0] != "" && paidDate[index][0] == "") {
                 let invoiceNumber = this.sheet.getRange(startingRow+index,this.invoice_number).getValue();
 
-                let invoiceFolder = Invoices.newInvoiceFolder((new DatabaseData(this.sheet.getParent())).getVariable("Invoice Folder"))
+                let invoiceFolder = newInvoiceFolder((new DatabaseData(this.sheet.getParent())).getVariable("Invoice Folder"))
                 if (invoiceFolder.invoiceExists(invoiceNumber)) {
                     let invoicePDF = invoiceFolder.getInvoice(invoiceNumber);
                     
