@@ -25,3 +25,4 @@ jobs:
         command: 'deploy'
         deployId: ${{ secrets.DEPLOY_ID }}
         versionNumber: ${{ secrets.VERSION_NUMBER }}
+        description: ${{ secrets.DESCRIPTION }}
