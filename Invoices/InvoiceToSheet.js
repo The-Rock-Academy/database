@@ -46,6 +46,11 @@ class InvoiceSheetRangeManager {
     return this.getCostRange(1,3)
   }
 
+  getNumberOfLessonsRange() {
+    let row = this.sheet.getParent().getRangeByName("firstCost").getRow();
+    return this.sheet.getRange(row, 5);
+  }
+
   getInvoiceNumberRange() {
     return this.sheet.getParent().getRangeByName("invoiceNumber")
   }
