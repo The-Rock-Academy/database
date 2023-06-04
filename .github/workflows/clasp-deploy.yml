@@ -23,6 +23,4 @@ jobs:
         clientSecret: ${{ secrets.CLIENT_SECRET }}
         scriptId: ${{ secrets.SCRIPT_ID }}
         command: 'deploy'
-        deployId: ${{ secrets.DEPLOY_ID }}
-        versionNumber: ${{ secrets.VERSION_NUMBER }}
         description: ${{ secrets.DESCRIPTION }}
