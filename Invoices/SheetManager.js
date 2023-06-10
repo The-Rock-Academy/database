@@ -60,8 +60,10 @@ class SheetManager {
     let templateSS = this.databaseSheetManager.databaseData.getTemplateSS();
     let template_type = updating ? "updating" : "default";
     let emailer = Emails.newEmailer(templateSS, (type+" invoice"), template_type);
-
-    emailer.sendEmail([recipient], invoiceInfo, [invoicePDF])
+    
+    let replyTo = type == "shp"? "geoff@therockacademy.co.nz" : "";
+        
+    emailer.sendEmail([recipient], invoiceInfo, [invoicePDF], replyTo)
 
   }
 
