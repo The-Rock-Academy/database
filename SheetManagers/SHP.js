@@ -130,7 +130,7 @@ class SHPManager extends DatabaseSheetManager {
         //Find out what week to just assume all lessons will be attended
         let price = this.sheet.getRange(activeRow, this.getColumn("Price")).getValue();
     
-        let numberOfLessons = price == 350 ? 5 : price / 75;
+        let numberOfLessons = this.sheet.getRange(activeRow, this.getColumn("Number of Days")).getValue();
     
         // ---- parentName -----
         let parentName = this.sheet.getRange(activeRow, this.getColumn("Guardian")).getValue();
@@ -183,12 +183,19 @@ class SHPManager extends DatabaseSheetManager {
         this.sheet.insertRowBefore(4);
 
         //Add in price formula
-    
 
         // Using rowRange to help with the problem of this being done at the same time. I.e if we have people submiting a form at the same time.
         let rowRange = this.sheet.getRange(4, 1, 1, this.sheet.getLastColumn());
 
-        this.sheet.getRange(rowRange.getRow(), this.getColumn("Price")).setFormula("=IF(COUNTA(Z4:AD4)=5, 350, counta(Z4:AD4) * 75)");
+        // Get the A1 notation for Number of days
+        let numberOfDaysRange = this.sheet.getRange(rowRange.getRow(), this.getColumn("Number of Days"));
+        let numberOfDaysA1 = numberOfDaysRange.getA1Notation();
+
+        // Get days range
+        let daysRange = this.sheet.getRange(rowRange.getRow(), this.getColumn("Mon Day 1"), 1, 5);
+
+        numberOfDaysRange.setFormula(`=counta(${daysRange.getA1Notation()})`);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Price")).setFormula(`if(${numberOfDaysA1}=5, 350, ${numberOfDaysA1} * 75)`);
 
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Student Name")).setValue(Student_name);
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Guardian Name")).setValue(Parent_name);
@@ -197,7 +204,7 @@ class SHPManager extends DatabaseSheetManager {
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Emergency Contact")).setValue(Emergency_contact);
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Notes and Allergies")).setValue(notes);
 
-        this.sheet.getRange(rowRange.getRow(), this.getColumn("Mon Day 1"), 1, 5).setValues([days.map(day => {
+        daysRange.setValues([days.map(day => {
             if (day) {
                 return "x"
             } else {
