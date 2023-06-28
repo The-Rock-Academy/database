@@ -172,7 +172,12 @@ class StudentProcessor extends NewStudentManager {
         let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Instrument hire", "Tutor"];
         let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, "Weekly Lessons");
 
-        const newStudentInfo = {...genericInformation, ...weeklyLessonInfo}
+        const newStudentInfo = {...genericInformation, ...weeklyLessonInfo};
+
+
+        let staffDetails =  new StaffDetails(this.mainSS);
+        newStudentInfo.Tutor_Email = staffDetails.getEmail(newStudentInfo.Tutor);
+        newStudentInfo.Tutor_Phone = staffDetails.getPhoneNumber(newStudentInfo.Tutor)
 
         console.log("The new student information for weekly lessons is: " + JSON.stringify(newStudentInfo));
 
@@ -200,11 +205,11 @@ class StudentProcessor extends NewStudentManager {
         // -----Email the parent and the tutor with confirmation-----
 
         // Get recipient information
-        let tutor_email =  (new StaffDetails(this.mainSS)).getEmail(newStudentInfo.Tutor);
+        
 
         let emailer = Emails.newEmailer((new DatabaseData(this.mainSS)).getTemplateSS(), "Mobile Pupil Confirmation");
 
-        emailer.sendEmail([newStudentInfo.Email, tutor_email], newStudentInfo, instrumentBooklets);
+        emailer.sendEmail([newStudentInfo.Email, newStudentInfo.Tutor_Email], newStudentInfo, instrumentBooklets);
     }
     
 }

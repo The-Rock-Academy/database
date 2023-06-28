@@ -15,7 +15,7 @@ class StaffDetails {
         }
     }
 
-    getEmail(name: string): string {
+    getStaffRow(name: string): number {
         let column = this.getColumn("Short name");
         
         //Get the row of the staff member
@@ -23,6 +23,14 @@ class StaffDetails {
             return row[0];
         }).indexOf(name) + 2;
 
-        return this.sheet.getRange(row, this.getColumn("Email")).getValue();
+        return row;
+    }
+
+    getEmail(name: string): string {
+        return this.sheet.getRange(this.getStaffRow(name), this.getColumn("Email")).getValue();
+    }
+
+    getPhoneNumber(name: string): string {
+        return this.sheet.getRange(this.getStaffRow(name), this.getColumn("Phone")).getValue();
     }
 }
