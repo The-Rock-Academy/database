@@ -51,20 +51,15 @@ class BandSchoolManager extends DatabaseSheetManager {
         // Collecting information for invoice
         // --------------------------------
 
-        //Getting lesson cost. Current it is very much hard coded but this can be fixed once I have gotten guidance from Geoff.
         let numberOfWeeks = this.sheet.getRange(1,this.getColumn("Current Term")).getMergedRanges()[0].getNumColumns()
-        let totalCost = this.sheet.getColumn(activeRow, this.getColumn("Pupil cost")).getValue();
-        let chargedLessons = numberOfWeeks;
-        let costOfLesson = totalCost / chargedLessons;
 
-        // ---- parentName -----
         let parentName = this.sheet.getRange(activeRow, this.getColumn("Guardian")).getValue();
 
         let email = this.sheet.getRange(activeRow, this.getColumn("Email")).getValue();
 
         let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
 
-        if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&this.currentTerm)) {
+        if (!(parentName && email && billingCompany && pupilName &&this.currentTerm)) {
         SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
         return;
         }
@@ -72,7 +67,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, 0, costOfLesson, "", billingCompany,this.currentTerm, "band");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfWeeks, 0, 30, "", billingCompany,this.currentTerm, "band");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
@@ -144,7 +139,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         this.sheet.getRange(nextFreeRow, this.getColumn("Pupils Billing Company")).setValue(billingCompany);
         this.sheet.getRange(nextFreeRow, this.getColumn("Instrument")).setValue(instrument);
     
-    }
+    }}
 }
 
 
