@@ -374,7 +374,7 @@ class AttendanceManager extends DatabaseSheetManager {
     let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined);
-      let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
+      let previousInvoiceInformation = this.getInvoiceRanges(invoice.number, previousTerm)
       invoice.note = "This invoice is an updated version of an invoice sent on " + previousInvoiceInformation.date.getValue().toLocaleString('en-NZ') + ", for $" + previousInvoiceInformation.amount.getValue() + ".";
       invoice.updated = true;
     }
