@@ -74,15 +74,17 @@ class BandSchoolManager extends DatabaseSheetManager {
 
         let invoiceTerm = previousTerm? this.sheet.getRange(1,this.previousInvoiceColumn).getValue().slice(17) : this.currentTerm;
 
-        if (!(parentName && email && billingCompany && pupilName &&this.currentTerm)) {
-            SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
+        let totalPrice = this.sheet.getRange(activeRow, this.getColumn("Pupil cost")).getValue();
+
+        if (!(parentName && email && billingCompany && pupilName &&this.currentTerm  && totalPrice)) {
+            SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values are present for the pupil.")
         return;
         }
 
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfWeeks, 0, 30, "", billingCompany,invoiceTerm, "band");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, 1, 0, totalPrice, "", billingCompany,invoiceTerm, "band");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row, previousTerm);
             let previousInvoiceInformation = this.getInvoiceRanges(invoice.number, previousTerm)
