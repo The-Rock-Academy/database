@@ -312,12 +312,8 @@ class AttendanceManager extends DatabaseSheetManager {
 
     // Check if the invoice sender is already occupied.
     if (invoiceSheet.isInvoiceLoaded()) {
-      let answer = ui.alert("It appears the invoice sender already has an invoice loaded. Would you like to overide that invoice?", ui.ButtonSet.YES_NO)
-      if (answer == ui.Button.NO) {
-        return
-      } else {
         invoiceSheet.clearInvoice();
-      }
+      this.sheet.getParent().toast("Invoice in the sender has been cleared");
     }
 
     // --------------------------------
