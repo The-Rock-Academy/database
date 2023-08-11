@@ -26,7 +26,17 @@ class Database {
         currentArchive.setTrashed(true);
       }
     }
-    DriveApp.getFileById(this.ss.getId()).makeCopy(archiveName, this.archiveFolder)
+
+    let oldDatabaseFile = DriveApp.getFileById(this.ss.getId())
+    let databaseLocation = oldDatabaseFile.getParents().next();
+    
+    oldDatabaseFile.moveTo(this.archiveFolder);
+
+    let newFile = oldDatabaseFile.makeCopy(this.ss.getName(), databaseLocation);
+
+    this.ss.rename(archiveName);
+
+    return SpreadsheetApp.open(newFile);
   }
 
   /**
@@ -77,7 +87,7 @@ class Database {
    * This should recieved the form that was submitted iwth the next term dates.
    */
   reset(form) {
-    this.archive();
+    
 
     //Set the term number on the Home sheet
     let previousTerm = this.getDatabaseTerm();
@@ -85,6 +95,8 @@ class Database {
     this.setDatabaseTerm(nextTerm);
 
     let termStartDate = new Date(form.termDate)
+
+    this.ss.rename(nextTerm + " Database")
 
 
     let nextTermDates = [...Array(parseInt(form.termWeeks)).keys()].map(weekNumber => {
@@ -105,10 +117,6 @@ class Database {
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
   }
-}
-function handleTermDatesFormSubmit(form) {
-  let database = new Database(SpreadsheetApp.getActiveSpreadsheet());
-  database.reset(form)
 }
 
 function newDatabase(ss) {

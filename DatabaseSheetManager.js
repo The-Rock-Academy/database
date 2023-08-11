@@ -91,27 +91,18 @@ class DatabaseSheetManager {
    * @param {number} invoiceNumber 
    * @returns 
    */
-  getInvoiceRanges(invoiceNumber, previousTerm = false) {
+  getInvoiceRanges(invoiceNumber) {
     console.log("Current invoice column: " + this.currentInvoiceColumn);
-    let invoiceRow = this.getInvoiceRow(invoiceNumber,  previousTerm ? this.previousInvoiceColumn : this.currentInvoiceColumn);
+    let invoiceRow = this.getInvoiceRow(invoiceNumber, this.currentInvoiceColumn);
     console.log("Row of invoice number " + invoiceNumber + " is " + invoiceRow);
     if (invoiceRow == -1) {
       return null
     }
-    if (previousTerm) {
-      return {
-        number: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn),
-        amount: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 1),
-        date: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 2),
-        paidDate: this.sheet.getRange(invoiceRow,  this.previousInvoiceColumn + 3)
-      }
-    } else {
-      return {
-        number: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn),
-        amount: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 1),
-        date: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 2),
-        paidDate: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 3)
-      }
+    return {
+      number: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn),
+      amount: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 1),
+      date: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 2),
+      paidDate: this.sheet.getRange(invoiceRow,  this.currentInvoiceColumn + 3)
     }
 
   }
@@ -136,18 +127,18 @@ class DatabaseSheetManager {
    * @param {number} rowNumber Row number you are checking
    * @returns 
    */
-  getInvoiceNumberOfRow(rowNumber, previousInvoiceColumn=undefined) {
+  getInvoiceNumberOfRow(rowNumber) {
     console.log("searching for row invoice: " + rowNumber )
     console.log("Current invoice column: " + this.currentInvoiceColumn)
-    console.log(this.sheet.getRange(rowNumber,previousInvoiceColumn == undefined?this.currentInvoiceColumn:previousInvoiceColumn).getValue())
-    return this.sheet.getRange(rowNumber, previousInvoiceColumn == undefined?this.currentInvoiceColumn:previousInvoiceColumn).getValue()
+    console.log(this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue())
+    return this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue()
   }
   // -------------------------//------------------------ Resetting -------------------------//-------------------------//
 
-  resetInvoiceColumns(nextTerm,nextTermInvoiceColumn=undefined) {
+  resetInvoiceColumns(nextTerm,nextTermInvoiceColumn) {
     this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm);
 
-    let nextInvoiceColumn = nextTermInvoiceColumn == undefined ? this.currentInvoiceColumn + 4: nextTermInvoiceColumn;
+    let nextInvoiceColumn = nextTermInvoiceColumn;
 
     //Rename current to previous
     this.sheet.getRange(1, this.currentInvoiceColumn).setValue("Previous Invoice " + this.currentTerm);
@@ -164,9 +155,7 @@ class DatabaseSheetManager {
     this.sheet.getRange(1, nextInvoiceColumn, this.sheet.getMaxRows(), 4).clear({commentsOnly: true});
 
     //Delete old column
-    if (nextTermInvoiceColumn == undefined) {
-      this.sheet.deleteColumns(this.currentInvoiceColumn, 4);
-    }
+    this.sheet.deleteColumns(this.currentInvoiceColumn, 4);
   }
 
   resetCommentColumns() {
