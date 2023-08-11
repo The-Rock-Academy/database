@@ -14,7 +14,7 @@ class InvoiceSheetRangeManager {
   }
 
   getParentRange() {
-    return this.sheet.getParent().getRangeByName("parents");
+    return this.sheet.getParent().getRangeByName("Invoice!parents");
   }
 
   getEmail() {
@@ -26,19 +26,19 @@ class InvoiceSheetRangeManager {
   }
 
   getLogoRange() {
-    return this.sheet.getParent().getRangeByName("logo")
+    return this.sheet.getParent().getRangeByName("Invoice!logo")
   }
 
   getAddressRange() {
-    return this.sheet.getParent().getRangeByName("address")
+    return this.sheet.getParent().getRangeByName("Invoice!address")
   }
 
   getPaymentRange() {
-    return this.sheet.getParent().getRangeByName("payment")
+    return this.sheet.getParent().getRangeByName("Invoice!payment")
   }
 
   getCostRange(itemNum, numberOfItems) {
-    let row = this.sheet.getParent().getRangeByName("firstCost").getRow()
+    let row = this.sheet.getParent().getRangeByName("Invoice!firstCost").getRow()
     return this.sheet.getRange(row - 1 + itemNum, 2,numberOfItems,5)
   }
 
@@ -47,32 +47,32 @@ class InvoiceSheetRangeManager {
   }
 
   getNumberOfLessonsRange() {
-    let row = this.sheet.getParent().getRangeByName("firstCost").getRow();
+    let row = this.sheet.getParent().getRangeByName("Invoice!firstCost").getRow();
     return this.sheet.getRange(row, 5);
   }
 
   getInvoiceNumberRange() {
-    return this.sheet.getParent().getRangeByName("invoiceNumber")
+    return this.sheet.getParent().getRangeByName("Invoice!invoiceNumber")
   }
 
   getTermRange() {
-    return this.sheet.getParent().getRangeByName("term")
+    return this.sheet.getParent().getRangeByName("Invoice!term")
   }
 
   getNotesRange() {
-    return this.sheet.getParent().getRangeByName("notes")
+    return this.sheet.getParent().getRangeByName("Invoice!notes")
   }
 
   getDivisionMessageLocation() {
-    return this.sheet.getParent().getRangeByName("divisionMessage")
+    return this.sheet.getParent().getRangeByName("Invoice!divisionMessage")
   }
 
   getTotalCostRange() {
-    return this.sheet.getParent().getRangeByName("totalCost")
+    return this.sheet.getParent().getRangeByName("Invoice!totalCost")
   }
 
   getInvoiceInfoRange() {
-    return this.sheet.getParent().getRangeByName("invoiceInfo")
+    return this.sheet.getParent().getRangeByName("Invoice!invoiceInfo")
   }
 
 }

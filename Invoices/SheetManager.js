@@ -68,9 +68,18 @@ class SheetManager {
   }
 
   archiveInvoice() {
-    this.ss.getSheets().filter(sheet => sheet.getName() != "Invoice").forEach(sheet => sheet.hideSheet());
 
-    let invoicePDF = DriveApp.createFile(this.ss.getAs("application/PDF"))
+    let invoiceBuilderSpreadSheet = SpreadsheetApp.openById(this.databaseSheetManager.databaseData.getVariable("Invoice Builder"));
+
+    let invoiceBuilt = this.sheet.copyTo(invoiceBuilderSpreadSheet);
+    let invoiceBuiltName = "Invoice " + this.invoiceRanges.getInvoiceNumberRange().getValue();
+    invoiceBuilt.setName(invoiceBuiltName);
+    invoiceBuilderSpreadSheet.getSheets().
+      filter(sheet => sheet.getName() != invoiceBuiltName).
+      forEach(sheet => invoiceBuilderSpreadSheet.deleteSheet(sheet));  
+
+    let invoicePDF = DriveApp.createFile(invoiceBuilderSpreadSheet.getAs("application/PDF"))
+
     invoicePDF.setName(this.invoiceRanges.getInvoiceNumberRange().getValue() + ".pdf")
     this.invoiceArchive.addInvoice(invoicePDF)
     return invoicePDF

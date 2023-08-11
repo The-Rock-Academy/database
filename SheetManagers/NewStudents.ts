@@ -90,7 +90,7 @@ class StudentProcessor extends NewStudentManager {
     }
 
     getGenericInfo(): {} {
-        let genericInfoColumnNames: string[] = ["Message", "Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
+        let genericInfoColumnNames: string[] = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
@@ -124,7 +124,7 @@ class StudentProcessor extends NewStudentManager {
 
         let genericInformation = this.getGenericInfo();
 
-        let shpInformationColumnNames: string[] = ["Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
+        let shpInformationColumnNames: string[] = ["Message","Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
         let shpInfo = this.filterBlankColumns(shpInformationColumnNames, "School Holiday Programme");
 
         let shpManager = new SHPManager(this.sheet.getParent().getSheetByName(SHPManager.sheetName()));
@@ -133,7 +133,7 @@ class StudentProcessor extends NewStudentManager {
             genericInformation.Email,
             genericInformation.Phone, 
             [shpInfo.Mon, shpInfo.Tue, shpInfo.Wed, shpInfo.Thu, shpInfo.Fri],
-            genericInformation.Message,
+            shpInfo.Message,
             shpInfo.Emergency_contact);
     }
 
