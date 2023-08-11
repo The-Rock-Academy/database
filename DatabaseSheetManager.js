@@ -93,7 +93,7 @@ class DatabaseSheetManager {
    */
   getInvoiceRanges(invoiceNumber) {
     console.log("Current invoice column: " + this.currentInvoiceColumn);
-    let invoiceRow = this.getInvoiceRow(invoiceNumber,  previousTerm ? this.previousInvoiceColumn : this.currentInvoiceColumn);
+    let invoiceRow = this.getInvoiceRow(invoiceNumber, this.currentInvoiceColumn);
     console.log("Row of invoice number " + invoiceNumber + " is " + invoiceRow);
     if (invoiceRow == -1) {
       return null

@@ -78,33 +78,6 @@ class Invoice {
     return costs;
   }
 
-  // /**
-  //  * Takes the first letter of a initial and turns it into a full string
-  //  */
-  // getInstrumentName() {
-  //   switch(this.instrumentHire) {
-  //     case 'P':
-  //       return "Piano";
-  //     case 'S':
-  //       return "Singing";
-  //     case 'B':
-  //       return "Bass";
-  //     case 'U':
-  //       return "Ukulele";
-  //     case 'G':
-  //       return "Guitar";
-  //   }
-  // }
-  // /**
-  //  * Returns how much the instrument hireage will be costing.
-  //  */
-  // getInstrumentCost() {
-  //   if (this.instrumentHire != "") {
-  //     return this.instrumentHire.split(" ").length * 12.50
-  //   } else {
-  //     return 0
-  //   }
-  // }
 }
 
 function newInvoice(invoiceFolderID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHire, company, term, type) {
