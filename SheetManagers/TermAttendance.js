@@ -19,12 +19,6 @@ class AttendanceManager extends DatabaseSheetManager {
     // Some of these might need to be refactoed to be part of the object.
     let statusColumnNumber = this.getColumn("Status");
     let statusColumn = this.sheet.getRange(3, statusColumnNumber, this.getInactiveRowNumber()-2, 1);
-    
-    // Remove all the inactive pupils to the inactive section
-    let inactiveSearch = statusColumn.createTextFinder("Inactive");
-    for (const i in Array.from(Array(inactiveSearch.findAll().length).keys())) {
-      this.sheet.moveRows(inactiveSearch.findNext(), this.getInactiveRowNumber()+3)
-    }
 
     //Sort the active section by the status type
     // To do this I need to get the active range and then sort it using the sort function
@@ -82,7 +76,7 @@ class AttendanceManager extends DatabaseSheetManager {
   }
 
   getInactiveRowNumber() {
-    return this.sheet.createTextFinder("Inactive Pupils").findNext().getRowIndex();
+    return this.sheet.getLastRow();
 
   }
 
@@ -409,7 +403,7 @@ class AttendanceManager extends DatabaseSheetManager {
    * @param {string} pupilName 
    * @param {string} parentName 
    * @param {string} email 
-   * @param {number} costOfLesson 
+   * @param  costOfLesson 
    * @param {number} instrumentHire 
    * @param {string} billingCompany 
    * @param {string} tutor 
@@ -429,7 +423,6 @@ class AttendanceManager extends DatabaseSheetManager {
     this.sheet.getRange(newStudentRow, this.getColumn("Lesson Cost")).setValue(costOfLesson);
     this.sheet.getRange(newStudentRow, this.getColumn("Hire cost")).setValue(instrumentHire);
     this.sheet.getRange(newStudentRow, this.getColumn("Pupils Billing Company")).setValue(billingCompany);
-    this.sheet.getRange(newStudentRow, this.getColumn("Duration")).setValue(lessonLength);
     this.sheet.getRange(newStudentRow, this.getColumn("Teacher")).setValue(tutor);
     this.sheet.getRange(newStudentRow, this.getColumn("Phone")).setValue(phone);
     this.sheet.getRange(newStudentRow, this.getColumn("Suburb/Address")).setValue(address);
