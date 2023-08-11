@@ -61,7 +61,7 @@ class Invoice {
   getCosts() {
     let costs = [
       {
-        desc: (this.type == "term" ? "Music Lessons" : this.type == "shp" ? "School Holiday Programme" : "Band School for " + this.term),
+        desc: (this.type == "term" ? "Music Lessons " + this.term : this.type == "shp" ? "School Holiday Programme" : "Band School for " + this.term),
         quantity: this.lessons,
         price: this.costPerLesson
       }

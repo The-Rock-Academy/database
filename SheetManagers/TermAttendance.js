@@ -1,6 +1,6 @@
 class AttendanceManager extends DatabaseSheetManager {
   static sheetName(){return "Master sheet"}
-  static numberOfColumnsBeforeAttendanceStart() {return 2}
+  static numberOfColumnsBeforeAttendanceStart() {return 4}
 
   static getObjFromSS(SS) {
     return new AttendanceManager(SS.getSheetByName(AttendanceManager.sheetName()))
@@ -12,7 +12,7 @@ class AttendanceManager extends DatabaseSheetManager {
     this.currentTermAttendanceColumnNum = this.getColumn("Current " + this.currentTerm);
     this.currentTermWeeks = this.getCurrentTermWeeks();
     this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm, true)
-    this.previousInvoiceColumn = this.getColumn("Previous Invoice ");
+    // this.previousInvoiceColumn = this.getColumn("Previous Invoice ");
     this.previousTermWeeks = this.previousInvoiceColumn- AttendanceManager.numberOfColumnsBeforeAttendanceStart();
   }
 
@@ -312,7 +312,7 @@ class AttendanceManager extends DatabaseSheetManager {
 
     // Check if the invoice sender is already occupied.
     if (invoiceSheet.isInvoiceLoaded()) {
-        invoiceSheet.clearInvoice();
+      invoiceSheet.clearInvoice();
       this.sheet.getParent().toast("Invoice in the sender has been cleared");
     }
 
@@ -320,54 +320,28 @@ class AttendanceManager extends DatabaseSheetManager {
     // Collecting information for invoice
     // --------------------------------
 
-    // ----- Get number of lessons -------
-
-    //Find out what week to just assume all lessons will be attended
-    let weekNumber = this.getWeekNumber();
-
-    //Count lessons up until end of term simple
-    console.log("Week number is: " + weekNumber);
-    let lessonsToInvoice = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      return (range.isBlank() || range.getValue() == "P") && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
-    });
-
-    let trialLessons = this.getAttendanceRange(activeRow, true, previousTerm).filter((range, index) => {
-      return range.getValue() == "T" && (range.getBackground() != "#c8c8c8") && (index < (forTerm ? 100 : weekNumber))
-    }).length
-    console.log("this is how many trialLessons" + trialLessons)
-
-    let chargedLessons = lessonsToInvoice.length
-
-    // ---- cost of lesson -----
-    let costOfLesson = this.sheet.getRange(activeRow, this.getColumn("Lesson Cost")).getValue();
-
     // ---- parentName -----
     let parentName = this.sheet.getRange(activeRow, this.getColumn("Guardian")).getValue();
 
-
     let email = this.sheet.getRange(activeRow, this.getColumn("Email")).getValue();
 
-    let instrumentHire = this.sheet.getRange(activeRow, this.getColumn("Hire ")).getValue();
 
     let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
 
     let invoiceTerm = previousTerm? this.sheet.getRange(1,this.previousInvoiceColumn).getValue().slice(17) : this.currentTerm;
 
-    if (!(parentName && email && billingCompany && pupilName && costOfLesson && (chargedLessons || chargedLessons  == 0) &&invoiceTerm)) {
+    if (!(parentName && email && billingCompany && pupilName &&invoiceTerm)) {
       SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
       this.clearAttendanceNotInvoiced();
       return;
     }
 
-    //Mark the attendance cells that have been invoiced for
-    lessonsToInvoice.forEach(range => {
-      if (range.isBlank()) range.setValue("I")
-    })
+    let totalCost = this.sheet.getRange(activeRow, this.getColumn("Billable Amount")).getValue();
 
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, chargedLessons, trialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
+    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, 1, 0, totalCost, 0, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row, previousTerm?this.previousInvoiceColumn:undefined);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number, previousTerm)
@@ -400,12 +374,12 @@ class AttendanceManager extends DatabaseSheetManager {
   updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {
     console.log(`Updating sheet after invoice ${invoiceNumber} is sent with cost: ${totalCost} and number of lessons ${numberOfLessons}` )
     this.addInvoiceInfo(invoiceNumber, totalCost, sentDate);
-    this.updateAttendanceToInvoiced(invoiceNumber, numberOfLessons);
+    // this.updateAttendanceToInvoiced(invoiceNumber, numberOfLessons);
     this.clearAttendanceNotInvoiced(invoiceNumber);
   }
 
   clearSheetAfterClearingInvoiceSender(invoiceNumber) {
-    this.clearAttendanceNotInvoiced(invoiceNumber);
+    // this.clearAttendanceNotInvoiced(invoiceNumber);
     this.clearInvoiceNumber(invoiceNumber);
   }
 
@@ -431,8 +405,8 @@ class AttendanceManager extends DatabaseSheetManager {
     getInvoiceRow(invoiceNumber, currentInvoiceColumn = this.currentInvoiceColumn) {
       console.log("Using updated getInvoiceRow")
       let foundRowCurrent = this.sheet.getRange(3, this.currentInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
-      let foundRowPrevious = this.sheet.getRange(3, this.previousInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
-      if (foundRowCurrent == null && foundRowPrevious == null) {
+      // let foundRowPrevious = this.sheet.getRange(3, this.previousInvoiceColumn, this.sheet.getMaxRows(), 1).createTextFinder(invoiceNumber).matchEntireCell(true).findNext();
+      if (foundRowCurrent == null) {
         console.warn("Could not find a row for invoice number: " + invoiceNumber);
         return -1
       }
