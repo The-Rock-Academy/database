@@ -221,24 +221,6 @@ class AttendanceManager extends DatabaseSheetManager {
     return termDates[0].findIndex(date => date.getDate() == nextMondayDate.getDate() && date.getMonth() == date.getMonth())
   }
 
-  /**
-   * Takes the row number and returns the attendance range.
-   */
-  getAttendanceRange(row, asArray = false) {
-    if (asArray) {
-      let attendanceRanges = new Array();
-      let weeks = Array(this.currentTermWeeks).fill().map((element, index) => index)
-      weeks.forEach(week => {
-        attendanceRanges.push(this.sheet.getRange(row, (previousTerm?AttendanceManager.numberOfColumnsBeforeAttendanceStart():this.currentTermAttendanceColumnNum) + week))
-      })
-      return attendanceRanges
-    } else {
-      return this.sheet.getRange(row, previousTerm?AttendanceManager.numberOfColumnsBeforeAttendanceStart():this.currentTermAttendanceColumnNum, 1, this.currentTermWeeks)
-
-    }
-  }
-
-
   prepareInvoice(row, send = false, forTerm = true) {
     let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
     let ui = SpreadsheetApp.getUi();
