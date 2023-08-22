@@ -90,7 +90,7 @@ class AttendanceManager extends DatabaseSheetManager {
   // These methods here are all about dealing with the invoices in the attendance sheet.
 
   sendReminder(range) {
-    let invoiceColumn = this.getColumn("Previous Invoice");
+    let invoiceColumn = this.getColumn("Current Invoice");
     let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
 
     invoiceCollector.sendReminders(range);
