@@ -82,6 +82,9 @@ class SheetManager {
 
     invoicePDF.setName(this.invoiceRanges.getInvoiceNumberRange().getValue() + ".pdf")
     this.invoiceArchive.addInvoice(invoicePDF)
+
+    invoiceBuilt.setName(invoiceBuiltName + " (sent)")
+
     return invoicePDF
   }
 
