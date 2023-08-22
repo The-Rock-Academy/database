@@ -179,6 +179,13 @@ class SHPManager extends DatabaseSheetManager {
         return this.sheet.getRange(rowNumber, this.currentInvoiceColumn).getValue()
     }
 
+    sendReminder(range) {
+        let invoiceColumn = this.getColumn("Invoice");
+        let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian Name"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
+    
+        invoiceCollector.sendReminders(range);
+    }
+
     addBooking(Student_name, Parent_name, email, phone, days, notes, Emergency_contact) {
         this.sheet.insertRowBefore(4);
 
@@ -231,6 +238,11 @@ class SHPManager extends DatabaseSheetManager {
         this.prepareInvoice(rowRange.getRow(), true, true);
     }
 }
+
+function SHPSheetName () {
+    return SHPManager.sheetName();
+}
+
 
 function newSHPSheet(shpSheet) {
     return new SHPManager(shpSheet)
