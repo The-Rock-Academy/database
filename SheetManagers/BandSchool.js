@@ -14,6 +14,13 @@ class BandSchoolManager extends DatabaseSheetManager {
         this.previousInvoiceColumn = this.getColumn("Previous Invoice ");
     }
 
+    sendReminder(range) {
+        let invoiceColumn = this.getColumn("Current Invoice");
+        let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
+    
+        invoiceCollector.sendReminders(range);
+    }
+
     prepareAndSendInvoice(range, previousTerm = false) {
         for (let row = range.getRowIndex(); row < range.getHeight() + range.getRowIndex(); row++) {
           this.prepareInvoice(row, true, previousTerm);
