@@ -1,5 +1,5 @@
 class SHPBookings {
-    static sheetName: string = "School Holiday Programme bookings";
+    static sheetName: string = "SHP Bookings";
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
     ss: GoogleAppsScript.Spreadsheet.Spreadsheet;
 
