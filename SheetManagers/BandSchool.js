@@ -13,8 +13,15 @@ class BandSchoolManager extends AttendanceSheetManager {
     }
 
     reset(nextTermDates, nextTerm) {
-        super(nextTermDates, nextTerm);
+        super.reset(nextTermDates, nextTerm);
         this.sheet.insertRowAfter(this.sheet.getMaxColumns())
+        this.sheet.getParent().setName(nextTerm + " Band School - TRA");
+    }
+
+    archive() {
+        let bandSchoolFolder = DriveApp.getFolderById(this.databaseData.getVariable("Band School Folder"));
+
+        Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, this.currentTerm + " Band School - TRA");
     }
 
     prepareAndSendInvoice(range, previousTerm = false) {

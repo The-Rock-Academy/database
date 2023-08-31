@@ -136,12 +136,12 @@ class DatabaseSheetManager {
   // -------------------------//------------------------ Resetting -------------------------//-------------------------//
 
   resetInvoiceColumns(nextTerm,nextTermInvoiceColumn) {
-    this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm);
+    this.currentInvoiceColumn = this.getColumn("Current Invoice ");
 
     let nextInvoiceColumn = nextTermInvoiceColumn;
 
     //Rename current to previous
-    this.sheet.getRange(1, this.currentInvoiceColumn).setValue("Previous Invoice " + this.currentTerm);
+    this.sheet.getRange(1, this.currentInvoiceColumn).setValue("Previous Invoice ");
     //Add in new column
     this.sheet.insertColumns(nextInvoiceColumn, 4);
     this.sheet.setColumnWidths(nextInvoiceColumn, 4, 80);

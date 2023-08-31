@@ -6,20 +6,13 @@ class Database {
     this.archiveFolder = DriveApp.getFolderById(this.databaseData.getVariable("Archive Folder"));
   }
 
-  /**
-   * Very simple function simply makes a copy of the database and moves it to the archive folder.
-   * It will ask a user to overwrite the previous archive if there is already an archive.
-   */
-  archive() {
-    let archiveName = this.currentTerm + " - Database"
-    
-    //Check for previous archive
-    let previousArchive = this.archiveFolder.getFilesByName(archiveName);
+  static createSpreadSheetCopy(ss, folder, archiveName) {
+    let previousArchive = folder.getFilesByName(archiveName);
 
     if (previousArchive.hasNext()) {
       let currentArchive = previousArchive.next();
       let ui = SpreadsheetApp.getUi()
-      let questionResponse = ui.alert("There is already an archive for this database that was made on " + currentArchive.getLastUpdated().toLocaleString() + "\nWould you like to overwrite it?", ui.ButtonSet.YES_NO)
+      let questionResponse = ui.alert("There is already an archive for " + archiveName + " that was made on " + currentArchive.getLastUpdated().toLocaleString() + "\nWould you like to overwrite it?", ui.ButtonSet.YES_NO)
       if (questionResponse == ui.Button.NO) {
         return
       } else {
@@ -27,13 +20,22 @@ class Database {
       }
     }
 
-    let databaseFile = DriveApp.getFileById(this.ss.getId())
+    let databaseFile = DriveApp.getFileById(ss.getId())
 
-    let oldDatabaseCopy = databaseFile.makeCopy(this.ss.getName(), this.archiveFolder);
+    let oldDatabaseCopy = databaseFile.makeCopy(ss.getName(), folder);
     oldDatabaseCopy.setName(archiveName);
 
+  }
+
+  /**
+   * Very simple function simply makes a copy of the database and moves it to the archive folder.
+   * It will ask a user to overwrite the previous archive if there is already an archive.
+   */
+  archive() {
+    Database.createSpreadSheetCopy(this.ss, this.archiveFolder, this.currentTerm + " Database");
+
     // Remove duplicated form
-    SHPBookingsNewFromSS(SpreadsheetApp.openById(oldDatabaseCopy.getId())).deleteAttachedForm();
+    SHPBookingsNewFromSS(SpreadsheetApp.openById(this.ss.getId())).deleteAttachedForm();
 
     return this.ss;
   }
@@ -114,7 +116,9 @@ class Database {
     SHPManager.newFromSS(this.ss).reset(nextTermDates);
 
     //Call Band School sheet resetter
-    newBandSchoolSheet(this.databaseData.getBandSchoolSheet()).reset(nextTermDates, nextTerm);
+    let bandSchoolManager = newBandSchoolSheet(this.databaseData.getBandSchoolSheet());
+    bandSchoolManager.archive()
+    bandSchoolManager.reset(nextTermDates, nextTerm);
 
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
