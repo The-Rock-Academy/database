@@ -273,17 +273,31 @@ class AttendanceManager extends DatabaseSheetManager {
 
     let invoiceTerm = this.currentTerm;
 
-    if (!(parentName && email && billingCompany && pupilName &&invoiceTerm)) {
+    let numberOfLessons = this.sheet.getRange(activeRow, this.getColumn("No. Lessons")).getValue();
+    let numberOfTrialLessons = this.sheet.getRange(activeRow, this.getColumn("No. Trials")).getValue();
+    let costOfLesson = this.sheet.getRange(activeRow, this.getColumn("Lesson Cost")).getValue();
+    let instrumentHire = this.sheet.getRange(activeRow, this.getColumn("Hire cost")).getValue();
+    instrumentHire = instrumentHire == "" ? 0 : instrumentHire;
+    numberOfTrialLessons = numberOfTrialLessons == "" ? 0 : numberOfTrialLessons;
+
+    if (!(parentName && email && billingCompany && pupilName &&invoiceTerm && numberOfLessons && costOfLesson)) {
       SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
       return;
     }
 
-    let totalCost = this.sheet.getRange(activeRow, this.getColumn("Billable Amount")).getValue();
+    let calculatedTotalCost =  (costOfLesson + instrumentHire) * numberOfLessons + instrumentHire * numberOfTrialLessons;
+
+    let expectedTotalCost = this.sheet.getRange(activeRow, this.getColumn("Billable Amount")).getValue();
+
+    if (calculatedTotalCost != expectedTotalCost) {
+      ui.alert("The total cost of the invoice does not match the expected total cost.\nExpected: $" + expectedTotalCost + "\nCalculated: $" + calculatedTotalCost + "\nPlease check columns v - w and make sure that everything is correct.", ui.ButtonSet.OK)
+      return
+    }
 
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, 1, 0, totalCost, 0, billingCompany,invoiceTerm, "term");
+    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, numberOfTrialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
