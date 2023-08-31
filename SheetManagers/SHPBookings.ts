@@ -43,6 +43,21 @@ class SHPBookings {
 
         this.sheet.deleteRow(latestRow);
     }
+
+
+    deleteAttachedForm() {
+        let attachedFormURL = this.sheet.getFormUrl();
+
+        if (attachedFormURL == null) {
+            throw new Error("The sheet does not have an attached form");
+        }
+
+        let form = FormApp.openByUrl(attachedFormURL);
+        form.removeDestination();
+
+        DriveApp.getFileById(form.getId()).setTrashed(true);
+    }
+
 }
 function SHPBookingsSheetName() {
     return SHPBookings.sheetName;

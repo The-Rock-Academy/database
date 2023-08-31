@@ -11,7 +11,7 @@ class Database {
    * It will ask a user to overwrite the previous archive if there is already an archive.
    */
   archive() {
-    let archiveName = "Archive " + this.currentTerm
+    let archiveName = this.currentTerm + " - Database"
     
     //Check for previous archive
     let previousArchive = this.archiveFolder.getFilesByName(archiveName);
@@ -27,20 +27,19 @@ class Database {
       }
     }
 
-    let oldDatabaseFile = DriveApp.getFileById(this.ss.getId())
-    let databaseLocation = oldDatabaseFile.getParents().next();
-    
-    oldDatabaseFile.moveTo(this.archiveFolder);
+    let databaseFile = DriveApp.getFileById(this.ss.getId())
 
-    let newFile = oldDatabaseFile.makeCopy(this.ss.getName(), databaseLocation);
+    let oldDatabaseCopy = databaseFile.makeCopy(this.ss.getName(), this.archiveFolder);
+    oldDatabaseCopy.setName(archiveName);
 
-    this.ss.rename(archiveName);
+    // Remove duplicated form
+    SHPBookingsNewFromSS(SpreadsheetApp.openById(oldDatabaseCopy.getId())).deleteAttachedForm();
 
-    return SpreadsheetApp.open(newFile);
+    return this.ss;
   }
 
   /**
-   * This is for grbbing the spreadsheets current term it is set too
+   * This is for grabbing the spreadsheets current term it is set too
    * Used by the various attendance sheets
    */
   getDatabaseTerm() {
