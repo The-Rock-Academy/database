@@ -1,4 +1,4 @@
-class BandSchoolManager extends DatabaseSheetManager {
+class BandSchoolManager extends AttendanceSheetManager {
     static sheetName() {
         return "Band School";
     }
@@ -10,15 +10,18 @@ class BandSchoolManager extends DatabaseSheetManager {
 
     constructor(sheet, currentTerm) {
         super(sheet, currentTerm);
-        this.currentInvoiceColumn = this.getColumn("Current Invoice", false);
-        this.previousInvoiceColumn = this.getColumn("Previous Invoice ");
     }
 
-    sendReminder(range) {
-        let invoiceColumn = this.getColumn("Current Invoice");
-        let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
-    
-        invoiceCollector.sendReminders(range);
+    reset(nextTermDates, nextTerm) {
+        super.reset(nextTermDates, nextTerm);
+        this.sheet.insertRowAfter(this.sheet.getMaxColumns())
+        this.sheet.getParent().setName(nextTerm + " Band School - TRA");
+    }
+
+    archive() {
+        let bandSchoolFolder = DriveApp.getFolderById(this.databaseData.getVariable("Band School Folder"));
+
+        Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, this.currentTerm + " Band School - TRA");
     }
 
     prepareAndSendInvoice(range, previousTerm = false) {
@@ -46,7 +49,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         let pupilName = this.sheet.getRange(activeRow, this.getColumn("Student Name")).getValue();
 
         // Check if invoice has already been sent.
-        let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow, previousTerm?this.previousInvoiceColumn: undefined)
+        let invoiceNumberOfRow = this.getInvoiceNumberOfRow(activeRow, undefined)
         let updating = false;
         if (invoiceNumberOfRow != "" && !this.getInvoiceRanges(invoiceNumberOfRow, previousTerm).date.isBlank()) {
             let answer = ui.alert("It appears you have already made and sent an invoice for " + pupilName + " for the term.\nThe new invoice you create for this pupil will override the previous one you had.\nWould you like to continue with making a new one?", ui.ButtonSet.YES_NO)
@@ -79,7 +82,7 @@ class BandSchoolManager extends DatabaseSheetManager {
 
         let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
 
-        let invoiceTerm = previousTerm? this.sheet.getRange(1,this.previousInvoiceColumn).getValue().slice(17) : this.currentTerm;
+        let invoiceTerm = this.currentTerm;
 
         let totalPrice = this.sheet.getRange(activeRow, this.getColumn("Pupil cost")).getValue();
 
@@ -103,7 +106,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         // ----------------------------
         // Load the invoice number into the attendance sheet
         // ----------------------------
-        this.sheet.getRange(activeRow, previousTerm? this.previousInvoiceColumn: this.currentInvoiceColumn).setValue(invoice.number);
+        this.sheet.getRange(activeRow, this.currentInvoiceColumn).setValue(invoice.number);
 
 
         SpreadsheetApp.flush(); //This ensures that the invoice is actaully loaded at this point
@@ -166,7 +169,9 @@ class BandSchoolManager extends DatabaseSheetManager {
     }
 }
 
-
+function getBandSchoolSheetName() {
+    return BandSchoolManager.sheetName();
+}
 
 function newBandSchoolSheet(sheet) {
     return new BandSchoolManager(sheet);
