@@ -113,6 +113,9 @@ class Database {
     //Call SHP sheet resetter
     SHPManager.newFromSS(this.ss).reset(nextTermDates);
 
+    //Call Band School sheet resetter
+    newBandSchoolSheet(this.databaseData.getBandSchoolSheet()).reset(nextTermDates, nextTerm);
+
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
   }

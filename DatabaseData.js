@@ -25,6 +25,10 @@ class DatabaseData {
   getTemplateSS() {
     return SpreadsheetApp.openByUrl(this.getVariable("Email templates SS"));
   }
+
+  getBandSchoolSheet() {
+    return SpreadsheetApp.openByUrl(this.getVariable("Band School ID")).getSheetByName(getBandSchoolSheetName());
+  }
 }
 
 function newDatabaseData(database) {

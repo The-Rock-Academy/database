@@ -1,6 +1,5 @@
-class AttendanceManager extends DatabaseSheetManager {
+class AttendanceManager extends AttendanceSheetManager {
   static sheetName(){return "Master sheet"}
-  static numberOfColumnsBeforeAttendanceStart() {return 4}
 
   static getObjFromSS(SS) {
     return new AttendanceManager(SS.getSheetByName(AttendanceManager.sheetName()))
@@ -8,10 +7,6 @@ class AttendanceManager extends DatabaseSheetManager {
 
   constructor(sheet, currentTerm) {
     super(sheet, currentTerm);
-
-    this.currentTermAttendanceColumnNum = this.getColumn("Current " + this.currentTerm);
-    this.currentTermWeeks = this.getCurrentTermWeeks();
-    this.currentInvoiceColumn = this.getColumn("Current Invoice " + this.currentTerm, true)
   }
 
   clean() {
@@ -27,74 +22,14 @@ class AttendanceManager extends DatabaseSheetManager {
     activeRange.sort({column: this.getColumn("Teacher"), ascending: true})
   }
 
-  /**
-   * Reset the attendance sheet.
-   * This will move the current term to the previous term slots both for attendance and for invoice
-   */
-  reset(nextTermDetails, nextTerm) {
-    console.log("Resetting the Attendance sheet")
-
-    //----Refreshing the attendance section----------
-
-    let currentTermNameRange = this.sheet.getRange(1,this.currentTermAttendanceColumnNum);
-    let currentTermDateRange = this.sheet.getRange(2,this.currentTermAttendanceColumnNum, 1,this.currentTermWeeks)
-    //Rename current term
-    currentTermNameRange.setValue("Previous " +this.currentTerm)
-
-    //Add in new Attendance
-    let columnOfNextTerm = this.currentInvoiceColumn+4
-    let numberOfWeeksOfNextTerm = nextTermDetails.length
-
-    //Add in column
-    this.sheet.insertColumns(columnOfNextTerm, numberOfWeeksOfNextTerm)
-    let nextTermNameRange = this.sheet.getRange(1,columnOfNextTerm, 1, numberOfWeeksOfNextTerm);
-    let nextTermDateRange = this.sheet.getRange(2, columnOfNextTerm, 1, numberOfWeeksOfNextTerm)
-    //Name the term area
-    nextTermNameRange.setValue("Current " + nextTerm).merge()
-    //Set date values
-    nextTermDateRange.setValues([nextTermDetails])
-
-    //Copy across formattting
-      //Doing a complex format copying becuase there may be different numbers of weeks and the previous function did not copy column widths
-    nextTermDetails.map((date, index) => {
-      this.sheet.getRange(2,this.currentTermAttendanceColumnNum).copyTo(this.sheet.getRange(2,columnOfNextTerm + index), SpreadsheetApp.CopyPasteType.PASTE_COLUMN_WIDTHS, false);
-      this.sheet.getRange(2,this.currentTermAttendanceColumnNum).copyTo(this.sheet.getRange(2,columnOfNextTerm + index), SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-    })
-
-    //Add in border on right
-    this.sheet.getRange(1,columnOfNextTerm + numberOfWeeksOfNextTerm-1, this.sheet.getMaxRows()).setBorder(null, null, null, true, null, null, "black", SpreadsheetApp.BorderStyle.DOUBLE)
-
-    //Copy term range format
-    currentTermNameRange.copyTo(nextTermNameRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false)
-
-    //-----Refreshing the invoice section-------------
-
-    this. resetInvoiceColumns(nextTerm, columnOfNextTerm+numberOfWeeksOfNextTerm-(this.currentTermAttendanceColumnNum - AttendanceManager.numberOfColumnsBeforeAttendanceStart()));
-
-    //Delete old term information
-    this.sheet.deleteColumns(AttendanceManager.numberOfColumnsBeforeAttendanceStart(), this.currentTermWeeks)
-  }
-
   getInactiveRowNumber() {
     return this.sheet.getLastRow();
 
   }
 
-  getCurrentTermWeeks() {
-    return this.sheet.getRange(1,this.currentTermAttendanceColumnNum).getMergedRanges()[0].getNumColumns()
-  }
-
   // -------------------------------------------------------------------------------------------------------
   // --------- Invoices -----------------------------------------------------------------------------------
   // -------------------------------------------------------------------------------------------------------
-  // These methods here are all about dealing with the invoices in the attendance sheet.
-
-  sendReminder(range) {
-    let invoiceColumn = this.getColumn("Current Invoice");
-    let invoiceCollector = new InvoiceCollector(this.sheet, invoiceColumn+2, invoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), invoiceColumn, invoiceColumn+1, this.getColumn("Invoice reminder"));
-
-    invoiceCollector.sendReminders(range);
-  }
 
   // ------------------
   // Non term length invoices
