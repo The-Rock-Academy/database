@@ -25,6 +25,8 @@ class Database {
     let oldDatabaseCopy = databaseFile.makeCopy(ss.getName(), folder);
     oldDatabaseCopy.setName(archiveName);
 
+    return oldDatabaseCopy
+
   }
 
   /**
@@ -32,10 +34,10 @@ class Database {
    * It will ask a user to overwrite the previous archive if there is already an archive.
    */
   archive() {
-    Database.createSpreadSheetCopy(this.ss, this.archiveFolder, this.currentTerm + " Database");
+    let copied = Database.createSpreadSheetCopy(this.ss, this.archiveFolder, this.currentTerm + " Database");
 
     // Remove duplicated form
-    SHPBookingsNewFromSS(SpreadsheetApp.openById(this.ss.getId())).deleteAttachedForm();
+    SHPBookingsNewFromSS(SpreadsheetApp.openById(copied.getId())).deleteAttachedForm();
 
     return this.ss;
   }
