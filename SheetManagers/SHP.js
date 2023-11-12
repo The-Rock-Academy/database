@@ -1,10 +1,14 @@
 class SHPManager extends DatabaseSheetManager {
-    static sheetName() {
-        return "SHP";
+    static sheetName(week = 1) {
+        if (week == 1) {
+            return "SHP";
+        } else if (week == 2) {
+            return "SHP 2";
+        }
     }
 
-    static newFromSS(ss, currentTerm) {
-        return (new SHPManager(ss.getSheetByName(SHPManager.sheetName()), currentTerm));
+    static newFromSS(ss, currentTerm, week =1) {
+        return (new SHPManager(ss.getSheetByName(SHPManager.sheetName(week)), currentTerm));
     }
 
     constructor(sheet, currentTerm) {
@@ -16,7 +20,7 @@ class SHPManager extends DatabaseSheetManager {
         console.log("Nothing to be cleaned yet on the SHP");
     }
 
-    reset(nextTermDetails, nextTerm) {
+    reset(nextTermDetails) {
 
         // Insert new header and rows
         this.sheet.insertRowsBefore(3, 31);
@@ -239,7 +243,7 @@ class SHPManager extends DatabaseSheetManager {
     }
 }
 
-function SHPSheetName () {
+function SHPSheetName(week = 1) {
     return SHPManager.sheetName();
 }
 
