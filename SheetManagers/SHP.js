@@ -1,10 +1,14 @@
 class SHPManager extends DatabaseSheetManager {
-    static sheetName() {
-        return "SHP";
+    static sheetName(week = 1) {
+        if (week == 1) {
+            return "SHP";
+        } else if (week == 2) {
+            return "SHP 2";
+        }
     }
 
-    static newFromSS(ss, currentTerm) {
-        return (new SHPManager(ss.getSheetByName(SHPManager.sheetName()), currentTerm));
+    static newFromSS(ss, currentTerm, week =1) {
+        return (new SHPManager(ss.getSheetByName(SHPManager.sheetName(week)), currentTerm));
     }
 
     constructor(sheet, currentTerm) {
@@ -16,7 +20,7 @@ class SHPManager extends DatabaseSheetManager {
         console.log("Nothing to be cleaned yet on the SHP");
     }
 
-    reset(nextTermDetails, nextTerm) {
+    reset(nextTermDetails) {
 
         // Insert new header and rows
         this.sheet.insertRowsBefore(3, 31);
@@ -141,7 +145,7 @@ class SHPManager extends DatabaseSheetManager {
     
         let billingCompany = this.sheet.getRange(activeRow, this.getColumn("Pupils Billing Company")).getValue();
     
-        if (!(parentName && email && billingCompany && pupilName && price && (numberOfLessons || numberOfLessons  == 0) &&this.currentTerm)) {
+        if (!(parentName && email && billingCompany && pupilName && price && numberOfLessons &&this.currentTerm)) {
             throw new Error("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.");
         }
         // -----------------------------
@@ -239,8 +243,8 @@ class SHPManager extends DatabaseSheetManager {
     }
 }
 
-function SHPSheetName () {
-    return SHPManager.sheetName();
+function SHPSheetName(week = 1) {
+    return SHPManager.sheetName(week);
 }
 
 

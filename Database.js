@@ -116,6 +116,7 @@ class Database {
 
     //Call SHP sheet resetter
     SHPManager.newFromSS(this.ss).reset(nextTermDates);
+    SHPManager.newFromSS(this.ss, null, 2).reset(nextTermDates);
 
     //Call Band School sheet resetter
     let bandSchoolManager = newBandSchoolSheet(this.databaseData.getBandSchoolSheet());
