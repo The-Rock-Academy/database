@@ -1,11 +1,23 @@
 class SHPBookings {
     static sheetName: string = "SHP Bookings";
+    static sheetName2: string = "SHP Bookings 2";
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
     ss: GoogleAppsScript.Spreadsheet.Spreadsheet;
+    week: number;
 
-    constructor(ss) {
+    constructor(ss, week =1) {
         this.ss = ss;
-        this.sheet = ss.getSheetByName(SHPBookings.sheetName);
+        this.week = week;
+
+        if (week == 1) {
+            this.sheet = ss.getSheetByName(SHPBookings.sheetName);
+        }
+        else if (week == 2) {
+            this.sheet = ss.getSheetByName(SHPBookings.sheetName2);
+        } else {
+            throw new Error("Week to SHPBookings constructor must be 1 or 2");
+        }
+
         if (this.sheet == null) {
             throw new Error("The sheet '" + SHPBookings.sheetName + "' does not exist");
         }
@@ -37,7 +49,7 @@ class SHPBookings {
 
         console.log("Recieved booking with information: " + pupilInformation);
 
-        let shpManager = SHPManager.newFromSS(this.ss);
+        let shpManager = SHPManager.newFromSS(this.ss, null, this.week);
 
         shpManager.addBooking(pupilInformation[1], pupilInformation[2], pupilInformation[5], pupilInformation[3], days_array, pupilInformation[6], pupilInformation[4]);
 
@@ -59,10 +71,14 @@ class SHPBookings {
     }
 
 }
-function SHPBookingsSheetName() {
-    return SHPBookings.sheetName;
+function SHPBookingsSheetName(week = 1) {
+    if (week == 1) {
+        return SHPBookings.sheetName;
+    } else if (week == 2) {
+        return SHPBookings.sheetName2;
+    }
 }
 
-function SHPBookingsNewFromSS(ss) {
-    return new SHPBookings(ss);
+function SHPBookingsNewFromSS(ss, week = 1) {
+    return new SHPBookings(ss, week);
 }
