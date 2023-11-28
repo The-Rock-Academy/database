@@ -6,6 +6,41 @@ on:
       - main
 
 jobs:
+  undeploy:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Undeploy old versions
+      run: |
+        # Fetch all deployments
+        deployments=$(npx @google/clasp deployments)
+
+        # Parse the output to get the deployment IDs and version numbers
+        deployments=$(echo "$deployments" | grep -o -E 'AKfycb[^ ]+ @[^ ]+' | sort -t@ -k2n)
+
+        # Exclude the three most recent deployments
+        deployments_to_undeploy=$(echo "$deployments" | head -n -3)
+
+        # Undeploy the remaining deployments
+        while IFS= read -r line; do
+            deployment_id=$(echo "$line" | cut -d' ' -f1)
+            npx @google/clasp undeploy "$deployment_id"
+        done <<< "$deployments_to_undeploy"
+      env:
+        CLASP_TOKEN_DIR: ${{ github.workspace }}
+        CLASP_TOKEN_FILE: .clasprc.json
+        CLASP_SETTINGS_DIR: ${{ github.workspace }}
+        CLASP_SETTINGS_FILE: .clasp.json
+
   deploy:
     runs-on: ubuntu-latest
     
