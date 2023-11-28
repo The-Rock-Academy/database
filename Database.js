@@ -132,12 +132,17 @@ function newDatabase(ss) {
   return new Database(ss)
 }
 
-function getSheetManagerForType(ss, type) {
+function getSheetManagerForType(ss, type, term) {
   switch(type) {
     case "term":
       return newAttendanceSheet(ss.getSheetByName("Master Sheet"));
     case "shp":
-      return SHPManager.newFromSS(ss, undefined);
+      // If term has jan or Jan in it then it is the second week
+      if (term.toLowerCase().includes("jan")) {
+        return SHPManager.newFromSS(ss, undefined, 2);
+      } else {
+        return SHPManager.newFromSS(ss, undefined);
+      }
     case "band":
       return BandSchoolManager.newFromSS(ss);
     default:
