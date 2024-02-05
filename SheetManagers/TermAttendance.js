@@ -215,9 +215,24 @@ class AttendanceManager extends AttendanceSheetManager {
     instrumentHire = instrumentHire == "" ? 0 : instrumentHire;
     numberOfTrialLessons = numberOfTrialLessons == "" ? 0 : numberOfTrialLessons;
 
-    if (!(parentName && email && billingCompany && pupilName &&invoiceTerm && numberOfLessons && costOfLesson)) {
-      SpreadsheetApp.getUi().alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil.")
-      return;
+    // Check to make sure that all of the values are not empty
+    console.log("Checking for empty values")
+
+    let mandatoryVales = {
+      "Parent Name": parentName,
+      "Email": email,
+      "Billing Company": billingCompany,
+      "Pupil Name": pupilName,
+      "Invoice Term": invoiceTerm,
+      "Number of Lessons": numberOfLessons,
+      "Cost of Lesson": !this.sheet.getRange(activeRow, this.getColumn("Lesson Cost")).isBlank(),
+    }
+
+    for (const [key, value] of Object.entries(mandatoryVales)) {
+      if (!value) {
+        ui.alert("Sorry the invoice for row " + row +" cannot be made as it is missing values. Please check all values and are present for the pupil. The value missing is: " + key + " Which is actaully '" + value + "'")
+        return;
+      }
     }
 
     let calculatedTotalCost =  (costOfLesson + instrumentHire) * numberOfLessons + instrumentHire * numberOfTrialLessons;
