@@ -206,7 +206,7 @@ class SHPManager extends DatabaseSheetManager {
         let daysRange = this.sheet.getRange(rowRange.getRow(), this.getColumn("Mon Day 1"), 1, 5);
 
         numberOfDaysRange.setFormula(`=counta(${daysRange.getA1Notation()})`);
-        this.sheet.getRange(rowRange.getRow(), this.getColumn("Price")).setFormula(`if(${numberOfDaysA1}=5, 350, ${numberOfDaysA1} * 75)`);
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Price")).setFormula(`${numberOfDaysA1} * 80`);
 
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Student Name")).setValue(Student_name);
         this.sheet.getRange(rowRange.getRow(), this.getColumn("Guardian Name")).setValue(Parent_name);
