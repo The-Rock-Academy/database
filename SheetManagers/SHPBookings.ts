@@ -42,8 +42,13 @@ class SHPBookings {
         let pupilInformation = this.sheet.getRange(latestRow, 1, 1, this.sheet.getLastColumn()).getValues()[0];
 
 
+        // Make everything lower case
         let days = pupilInformation[7].split(", ");
-        let days_array = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
+        days = days.map((day) => {
+            return day.toLowerCase();
+        });
+
+        let days_array = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((day) => {
             return days.includes(day) ? true : false;
         });
 
