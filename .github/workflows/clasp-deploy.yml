@@ -24,6 +24,7 @@ jobs:
         scriptId: ${{ secrets.SCRIPT_ID }}
         command: 'deploy'
         description: ${{ secrets.DESCRIPTION }}
+        deployId: ${{ secrets.DEPLOY_ID }}
 
         # Need to sort out key issues.
   # undeploy:
