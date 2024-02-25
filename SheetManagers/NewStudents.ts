@@ -1,9 +1,18 @@
+// These enum values must line up with the "Services Interested in" column and the three subheadings of the student information in the New Students sheet
+enum ServiceNames {
+    WeeklyLessons =  "Mobile Lessons",
+    BandSchool = "Band School",
+    SHP = "School Holiday Programme"
+}
+
 class NewStudentManager {
     static sheetName: string = "New Students";
     sheet: GoogleAppsScript.Spreadsheet.Sheet;
 
     static columnHeaderRow: number = 1;
     static columnCategoryRow: number = 2;
+
+
 
     constructor(sheet) {
         this.sheet = sheet;
@@ -30,14 +39,14 @@ class NewStudentManager {
 
         this.sheet.getRange(3,this.getColumn("Billing Company"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["TRA", "GML", "TSA"]).build());
 
-        this.sheet.getRange(3,this.getColumn("Tutor", "Weekly Lessons"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
-        this.sheet.getRange(3,this.getColumn("Tutor", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+        this.sheet.getRange(3,this.getColumn("Tutor", ServiceNames.WeeklyLessons),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
+        this.sheet.getRange(3,this.getColumn("Tutor", ServiceNames.BandSchool),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
 
-        this.sheet.getRange(3,this.getColumn("Day", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["MON", "TUE", "WED", "THU", "FRI"]).build());
-        this.sheet.getRange(3,this.getColumn("Time", "Band School"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["4pm", "5pm"]).build());
+        this.sheet.getRange(3,this.getColumn("Day", ServiceNames.BandSchool),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["MON", "TUE", "WED", "THU", "FRI"]).build());
+        this.sheet.getRange(3,this.getColumn("Time", ServiceNames.BandSchool),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["4pm", "5pm"]).build());
     
         ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
-            this.sheet.getRange(3,this.getColumn(day, "School Holiday Programme"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
+            this.sheet.getRange(3,this.getColumn(day, ServiceNames.SHP),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
         };
         console.log("Cleaned " + this.sheet.getName());
     }
@@ -99,12 +108,12 @@ class StudentProcessor extends NewStudentManager {
         //Find out what services they are interested in
         let formResponse = this.sheet.getRange(this.activeRow, this.getColumn("Services interested in")).getValue();
 
-        let weeklyLessons = formResponse.includes("Mobile Lessons");
-        let bandSchool = formResponse.includes("Band School");
-        let shp = formResponse.includes("School Holiday Programme");
+        let weeklyLessons = formResponse.includes(ServiceNames.WeeklyLessons);
+        let bandSchool = formResponse.includes(ServiceNames.BandSchool);
+        let shp = formResponse.includes(ServiceNames.SHP);
 
 
-        console.log("This student is interested in weekly lessons: " + weeklyLessons + ", band school: " + bandSchool + ", and the school holiday program: " + shp);
+        console.log("This student is interested in " + ServiceNames.WeeklyLessons + ": " + weeklyLessons + ", " + ServiceNames.BandSchool + ": " + bandSchool + ", and the " + ServiceNames.SHP + ": " + shp);
 
         if (weeklyLessons) {
             this.prcoessNewWeeklyStudent();
@@ -125,7 +134,7 @@ class StudentProcessor extends NewStudentManager {
         let genericInformation = this.getGenericInfo();
 
         let shpInformationColumnNames: string[] = ["Message","Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
-        let shpInfo = this.filterBlankColumns(shpInformationColumnNames, "School Holiday Programme");
+        let shpInfo = this.filterBlankColumns(shpInformationColumnNames, ServiceNames.SHP);
 
         let shpManager = new SHPManager(this.sheet.getParent().getSheetByName(SHPManager.sheetName()));
         shpManager.addBooking(genericInformation.Student_name,
@@ -141,11 +150,11 @@ class StudentProcessor extends NewStudentManager {
         let genericInformation = this.getGenericInfo();
 
         let bandSchoolInformationColumnNames: string[] = ["Day", "Time", "Tutor"];
-        let bandSchoolInfo = this.filterBlankColumns(bandSchoolInformationColumnNames, "Band School");
+        let bandSchoolInfo = this.filterBlankColumns(bandSchoolInformationColumnNames, ServiceNames.BandSchool);
 
         const newStudentInfo = {...genericInformation, ...bandSchoolInfo};
 
-        console.log("The new student information for band school is: " + JSON.stringify(newStudentInfo));
+        console.log("The new student information for " + ServiceNames.BandSchool + " is: " + JSON.stringify(newStudentInfo));
 
         // Add pupil to the band school sheet
         let bandSchool = (new BandSchoolManager(SpreadsheetApp.openByUrl((new DatabaseData(this.mainSS)).getVariable("Band School ID")).getSheetByName(BandSchoolManager.sheetName()), ""))
@@ -170,7 +179,7 @@ class StudentProcessor extends NewStudentManager {
         let genericInformation = this.getGenericInfo();
 
         let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Instrument hire", "Tutor"];
-        let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, "Weekly Lessons");
+        let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, ServiceNames.WeeklyLessons);
 
         const newStudentInfo = {...genericInformation, ...weeklyLessonInfo};
 
@@ -179,7 +188,7 @@ class StudentProcessor extends NewStudentManager {
         newStudentInfo.Tutor_Email = staffDetails.getEmail(newStudentInfo.Tutor);
         newStudentInfo.Tutor_Phone = staffDetails.getPhoneNumber(newStudentInfo.Tutor)
 
-        console.log("The new student information for weekly lessons is: " + JSON.stringify(newStudentInfo));
+        console.log("The new student information for " + ServiceNames.WeeklyLessons + " is: " + JSON.stringify(newStudentInfo));
 
         // Add the student to the weekly lessons sheet
         let attendanceManager = AttendanceManager.getObjFromSS(this.mainSS);
