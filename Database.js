@@ -120,7 +120,7 @@ class Database {
 
     //Call Band School sheet resetter
     let bandSchoolManager = newBandSchoolSheet(this.databaseData.getBandSchoolSheet());
-    bandSchoolManager.archive()
+    bandSchoolManager.archive(previousTerm)
     bandSchoolManager.reset(nextTermDates, nextTerm);
 
 
