@@ -18,10 +18,10 @@ class BandSchoolManager extends AttendanceSheetManager {
         this.sheet.getParent().setName(nextTerm + " Band School - TRA");
     }
 
-    archive() {
+    archive(term) {
         let bandSchoolFolder = DriveApp.getFolderById(this.databaseData.getVariable("Band School Folder"));
 
-        Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, this.currentTerm + " Band School - TRA");
+        Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, term + " Band School - TRA Archive");
     }
 
     prepareAndSendInvoice(range, previousTerm = false) {

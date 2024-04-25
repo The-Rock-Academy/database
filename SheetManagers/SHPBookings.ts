@@ -63,6 +63,8 @@ class SHPBookings {
 
 
     deleteAttachedForm() {
+        // Delete main form
+
         let attachedFormURL = this.sheet.getFormUrl();
 
         if (attachedFormURL == null) {
@@ -73,6 +75,18 @@ class SHPBookings {
         form.removeDestination();
 
         DriveApp.getFileById(form.getId()).setTrashed(true);
+
+        // Delete copy form
+
+        let shp2Sheet = this.ss.getSheetByName(SHPBookings.sheetName2);
+        let attachedFormURL2 = shp2Sheet.getFormUrl();
+        if (attachedFormURL2 == null) {
+            return;
+        } else {
+            let form2 = FormApp.openByUrl(attachedFormURL2);
+            form2.removeDestination();
+            DriveApp.getFileById(form2.getId()).setTrashed(true);
+        }
     }
 
 }
