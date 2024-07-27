@@ -35,9 +35,10 @@ class Database {
    */
   archive() {
     let copied = Database.createSpreadSheetCopy(this.ss, this.archiveFolder, this.currentTerm + " Database");
-
+    let copied_ss = SpreadsheetApp.openById(copied.getId());
     // Remove duplicated form
-    SHPBookingsNewFromSS(SpreadsheetApp.openById(copied.getId())).deleteAttachedForm();
+    SHPBookingsNewFromSS(copied_ss).deleteAttachedForm();
+    newDatabaseData(copied_ss).setVariable("Invoice Sender", copied.getId())
 
     return this.ss;
   }
