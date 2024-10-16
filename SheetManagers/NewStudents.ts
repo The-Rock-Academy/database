@@ -37,7 +37,10 @@ class NewStudentManager {
         console.log("Cleaning " + this.sheet.getName());
         let tutorNameRange = this.sheet.getParent().getSheetByName("Staff").getRange("B3:B55");
 
-        this.sheet.getRange(3,this.getColumn("Billing Company"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["TRA", "GML", "TSA"]).build());
+        this.sheet.getRange(3,this.getColumn("Billing Company"),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["TRA", "GML", "TSA", "GFAD"]).build());
+
+        // Only allow all permuations of "Mobile Lessons", "Band School" and "School Holiday Programme"
+        this.sheet.getRange(3, this.getColumn("Services interested in"), this.sheet.getLastRow(), 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["Mobile Lessons", "Band School", "School Holiday Programme", "Mobile Lessons, Band School", "Mobile Lessons, School Holiday Programme", "Band School, School Holiday Programme", "Mobile Lessons, Band School, School Holiday Programme"]).build());
 
         this.sheet.getRange(3,this.getColumn("Tutor", ServiceNames.WeeklyLessons),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
         this.sheet.getRange(3,this.getColumn("Tutor", ServiceNames.BandSchool),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(tutorNameRange).build());
@@ -83,6 +86,22 @@ class StudentProcessor extends NewStudentManager {
             }
         });
         return result;
+    }
+
+    handleNewStudentEnquiry() {
+        this.addDefaultsToSheet();
+
+        // this.notifyOfNewStudent();
+    }
+
+    addDefaultsToSheet() {
+
+        // Add billing company to be GLAD. This will be so until the end of the 2024-2025 tax year.
+        this.sheet.getRange(this.activeRow, this.getColumn("Billing Company")).setValue("GLAD");
+
+        // Add services to be mobile lessons. This is because the system supports all three type of service processing. However at the moment Geoff only uses it for mobile lessons.
+        this.sheet.getRange(this.activeRow, this.getColumn("Services interested in")).setValue(ServiceNames.WeeklyLessons);
+
     }
     
     notifyOfNewStudent() {
