@@ -6,7 +6,7 @@ class Invoice {
     this.lessons = lessons;
     this.costPerLesson = costPerLesson;
     this.instrumentHireCost = instrumentHireCost;
-    if (["TRA", "TSA", "GML"].includes(company)) {
+    if (["TRA", "TSA", "GML", "GFAD"].includes(company)) {
       this.company = company;
     } else {
       throw new Error("Cannot have billing company: " + company);
@@ -48,6 +48,13 @@ class Invoice {
           bankAccount: "06-0574-0800509-00"
         }
         break;
+      case 'GFAD':
+        return {
+          name: "GFAD",
+          image: "https://static.wixstatic.com/media/23b2e9_562405ec4e3344949bd3a22468d76d6c~mv2.png/v1/fill/w_553,h_202,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/ROCK%20ACADEMY%20-%20Black%20on%20transparent_tif.png",
+          address: [["83 Ross Street, Kilbirnie"], ["Wellington, 6022"], ["021 565 750"]],
+          bankAccount: "01-0504-0160382-00"
+        }
       default:
         throw("There is not a billing company for this invoice. Only managed to find '" + this.company + "' in the Database");
     }

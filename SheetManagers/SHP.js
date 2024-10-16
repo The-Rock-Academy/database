@@ -224,21 +224,21 @@ class SHPManager extends DatabaseSheetManager {
         )])
 
         // Fill in the billing company.
-
-        let previousBillingCompany = this.sheet.getRange(rowRange.getRow()+1, this.getColumn("Pupils Billing Company")).getValue();
-        switch (previousBillingCompany) {
-            case "TRA":
-                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("GML");
-                break;
-            case "GML":
-                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TSA");
-                break;
-            case "TSA":
-                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
-                break;
-            default:
-                this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
-        }
+        this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("GFAD");
+        // let previousBillingCompany = this.sheet.getRange(rowRange.getRow()+1, this.getColumn("Pupils Billing Company")).getValue();
+        // switch (previousBillingCompany) {
+        //     case "TRA":
+        //         this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("GML");
+        //         break;
+        //     case "GML":
+        //         this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TSA");
+        //         break;
+        //     case "TSA":
+        //         this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
+        //         break;
+        //     default:
+        //         this.sheet.getRange(rowRange.getRow(), this.getColumn("Pupils Billing Company")).setValue("TRA");
+        // }
         this.prepareInvoice(rowRange.getRow(), true, true);
     }
 }
