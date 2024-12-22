@@ -9,6 +9,48 @@ class AttendanceManager extends AttendanceSheetManager {
     super(sheet, currentTerm);
   }
 
+  reset(nextTermDetails, nextTerm) {
+    super.reset(nextTermDetails, nextTerm)
+
+    // Reset the no of lessons and formula column
+
+    let noLessons = this.getColumn("No. Lessons");
+
+    this.sheet.getRange(3, noLessons, this.getInactiveRowNumber()-2, 1).clearContent();
+
+    // Reset the formula column
+    function getColumnLetter(columnNumber) {
+        let letter = '';
+        while (columnNumber > 0) {
+            let modulo = (columnNumber - 1) % 26;
+            letter = String.fromCharCode(65 + modulo) + letter;
+            columnNumber = Math.floor((columnNumber - modulo) / 26);
+        }
+        return letter;
+    }
+
+    let billableAmount = this.getColumn("Billable Amount");
+    let noTrials = this.getColumn("No. Trials");
+    let hireCost = this.getColumn("Hire Cost");
+    let lessonCost = this.getColumn("Lesson Cost");
+
+    // Convert column numbers to letters
+    let billableAmountLetter = getColumnLetter(billableAmount);
+    let noTrialsLetter = getColumnLetter(noTrials);
+    let hireCostLetter = getColumnLetter(hireCost);
+    let lessonCostLetter = getColumnLetter(lessonCost);
+    let noLessonsLetter = getColumnLetter(noLessons);
+
+    // Set the formula
+    let lastRow = this.getInactiveRowNumber() - 2;
+
+    // Set the formula for each cell in the range
+    for (let row = 3; row <= lastRow + 2; row++) {
+        let formula = `=(${noTrialsLetter}${row} + ${noLessonsLetter}${row}) * ${hireCostLetter}${row} + (${noLessonsLetter}${row} * ${lessonCostLetter}${row})`;
+        this.sheet.getRange(row, billableAmount).setFormula(formula);
+    }
+  }
+
   clean() {
     // Get things that will be needed throughout the clean.
     // Some of these might need to be refactoed to be part of the object.
