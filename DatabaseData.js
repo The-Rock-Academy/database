@@ -40,6 +40,9 @@ class DatabaseData {
   getBandSchoolSheet() {
     return SpreadsheetApp.openByUrl(this.getVariable("Band School ID")).getSheetByName(getBandSchoolSheetName());
   }
+  getBandSchoolInvoicingSheet() {
+    return SpreadsheetApp.openByUrl(this.getVariable("Band School Invoicing URL")).getSheetByName(getBandSchoolInvoicingSheetName())
+  }
 }
 
 function newDatabaseData(database) {
