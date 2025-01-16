@@ -124,6 +124,10 @@ class Database {
     bandSchoolManager.archive(previousTerm)
     bandSchoolManager.reset(nextTermDates, nextTerm);
 
+    let bandSchoolInvoicingManager = newBandSchoolInvoicingSheet(this.databaseData.getBandSchoolInvoicingSheet());
+    bandSchoolInvoicingManager.archive(previousTerm);
+    bandSchoolInvoicingManager.reset(nextTermDates, nextTerm);
+
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
   }
