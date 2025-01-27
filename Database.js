@@ -137,7 +137,7 @@ function newDatabase(ss) {
   return new Database(ss)
 }
 
-function getSheetManagerForType(ss, type, term) {
+function getSheetManagerForTypeForInvoicing(ss, type, term) {
   switch(type) {
     case "term":
       return newAttendanceSheet(ss.getSheetByName("Master Sheet"));
@@ -149,7 +149,7 @@ function getSheetManagerForType(ss, type, term) {
         return SHPManager.newFromSS(ss, undefined);
       }
     case "band":
-      return BandSchoolManager.newFromSS(ss);
+      return BandSchoolInvoicingManager.newFromSS(ss);
     default:
       throw new Error("You are trying to get a sheet for type: '" + type + "' which does not exist.");
   }
