@@ -131,6 +131,6 @@ function newSheetManager(databaseSheetManager, invoiceSenderSheet) {
 function newSheetManagerFromSender(invoiceSender) {
   let invoiceRanges = new InvoiceSheetRangeManager(invoiceSender);
   let invoiceInfo = invoiceRanges.getInvoiceInfoRange().getValues();
-  let originManager = getSheetManagerForType(SpreadsheetApp.openById(invoiceInfo[0][0]), invoiceInfo[0][1], invoiceRanges.getTermRange().getValue());
+  let originManager = getSheetManagerForTypeForInvoicing(SpreadsheetApp.openById(invoiceInfo[0][0]), invoiceInfo[0][1], invoiceRanges.getTermRange().getValue());
   return newSheetManager(originManager, invoiceSender)
 }
