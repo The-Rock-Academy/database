@@ -15,6 +15,7 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
 
     reset(nextTermDates, nextTerm) {
         this.resetInvoiceColumns(nextTerm, this.getColumn("Current Invoice", false)+4);
+        this.sheet.getRange(3, this.getColumn("Invoice reminders", false), this.sheet.getMaxRows(), 1).clearContent();
         this.sheet.getParent().setName(nextTerm + " Band School Invoicing - TRA");
     }
 
