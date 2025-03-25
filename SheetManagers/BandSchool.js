@@ -21,10 +21,14 @@ class BandSchoolManager extends DatabaseSheetManager {
         this.sheet.getParent().setName(nextTerm + " Band School - TRA");
     }
 
-    archive(term) {
+    archive(term, old_database) {
         let bandSchoolFolder = DriveApp.getFolderById(this.databaseData.getVariable("Band School Folder"));
 
-        Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, term + " Band School - TRA Archive");
+        let archive = Database.createSpreadSheetCopy(this.sheet.getParent(), bandSchoolFolder, term + " Band School - TRA Archive");
+        let archive_ss = SpreadsheetApp.openById(archive.getId())
+        archive_ss.getSheetByName("Data").getRange("A1").setValue("=IMPORTRANGE(\"" + old_database.getUrl() + "\", \"Data!A1:Z1000\")")
+
+        return archive_ss;
     }
 
 
