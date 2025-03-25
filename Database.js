@@ -40,7 +40,7 @@ class Database {
     SHPBookingsNewFromSS(copied_ss).deleteAttachedForm();
     newDatabaseData(copied_ss).setVariable("Invoice Sender", copied.getId())
 
-    return this.ss;
+    return copied_ss;
   }
 
   /**
@@ -88,9 +88,9 @@ class Database {
   }
 
   /**
-   * This should recieved the form that was submitted iwth the next term dates.
+   * This should received the form that was submitted iwth the next term dates.
    */
-  reset(form) {
+  reset(form, old_database) {
     
 
     //Set the term number on the Home sheet
@@ -121,12 +121,18 @@ class Database {
 
     //Call Band School sheet resetter
     let bandSchoolManager = newBandSchoolSheet(this.databaseData.getBandSchoolSheet());
-    bandSchoolManager.archive(previousTerm)
+    let old_band_school = bandSchoolManager.archive(previousTerm, old_database)
     bandSchoolManager.reset(nextTermDates, nextTerm);
 
     let bandSchoolInvoicingManager = newBandSchoolInvoicingSheet(this.databaseData.getBandSchoolInvoicingSheet());
-    bandSchoolInvoicingManager.archive(previousTerm);
+    let old_band_school_invoice = bandSchoolInvoicingManager.archive(previousTerm, old_band_school);
     bandSchoolInvoicingManager.reset(nextTermDates, nextTerm);
+
+    //Update the data sheet
+    let databaseData = newDatabaseData(old_database);
+    databaseData.setVariable("Main Database SS", old_database.getUrl());
+    databaseData.setVariable("Band School ID", old_band_school.getUrl());
+    databaseData.setVariable("Band School Invoicing URL", old_band_school_invoice.getUrl());
 
 
     this.ss.toast("The resetting to term " + nextTerm + " is completed.")
