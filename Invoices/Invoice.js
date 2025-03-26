@@ -50,7 +50,7 @@ class Invoice {
         break;
       case 'GFAD':
         return {
-          name: "GFAD",
+          name: "Geoffrey Frank Albert Day",
           image: "https://static.wixstatic.com/media/23b2e9_562405ec4e3344949bd3a22468d76d6c~mv2.png/v1/fill/w_553,h_202,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/ROCK%20ACADEMY%20-%20Black%20on%20transparent_tif.png",
           address: [["83 Ross Street, Kilbirnie"], ["Wellington, 6022"], ["021 565 750"]],
           bankAccount: "01-0504-0160382-00"
