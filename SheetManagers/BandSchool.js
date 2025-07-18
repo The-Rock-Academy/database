@@ -68,7 +68,7 @@ class BandSchoolManager extends DatabaseSheetManager {
         currentTermNameRange.setValue("Previous " +this.currentTerm)
     
         //Add in new Attendance
-        let columnOfNextTerm = 20
+        let columnOfNextTerm = this.currentTermAttendanceColumnNum + this.currentTermWeeks;
         let numberOfWeeksOfNextTerm = nextTermDetails.length
     
         //Add in column

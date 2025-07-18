@@ -11,12 +11,18 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
     constructor(sheet, currentTerm) {
         super(sheet, currentTerm);
         this.currentInvoiceColumn = this.getColumn("Current Invoice", false);
+        this.lastCol = 22; // V is column 22
     }
 
     reset(nextTermDates, nextTerm) {
         this.resetInvoiceColumns(nextTerm, this.getColumn("Current Invoice", false)+4);
         this.sheet.getRange(3, this.getColumn("Invoice reminders", false), this.sheet.getMaxRows(), 1).clearContent();
         this.sheet.getParent().setName(nextTerm + " Band School Invoicing - TRA");
+
+        // Clear the previous term information that was set in stone
+        this.sheet.getRange(1, 1, this.sheet.getMaxRows(), this.lastCol).clear();
+
+        this.sheet.getRange("A1").setFormula('=IMPORTRANGE(Data!B7, "Band School!A1:V")');
     }
 
     archive(term, old_database) {
@@ -42,8 +48,22 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
       }
 
     prepareInvoice(row, send = false, previousTerm = false) {
-        let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
         let ui = SpreadsheetApp.getUi();
+        if (!this.isSetInStone()) {
+            let answer = ui.alert(
+                "Set Information in Stone",
+                "The Band School Invoicing spreadsheet is currently linked to the regular Band School spreadsheet. Do you want to break this link and set the Band School Invoicing information in stone? This means that the changes between the Band School Invoicing and Band School sheets will no longer be synced.",
+                ui.ButtonSet.YES_NO
+            );
+            if (answer == ui.Button.YES) {
+                this.setInformationInStone();
+            } else {
+                ui.alert("You must set the information in stone before creating invoices.");
+                return;
+            }
+        }
+
+        let invoiceSheet = newSheetManager(this, SpreadsheetApp.openById(this.databaseData.getVariable("Invoice Sender")).getSheetByName(this.databaseData.getVariable("Invoice Sender sheet name")));
         let activeRow = row;
         
         // --------------------------------
@@ -150,6 +170,56 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
         let invoiceCollector = new InvoiceCollector(this.sheet, this.currentInvoiceColumn+2, this.currentInvoiceColumn+3, this.getColumn("Guardian"), this.getColumn("Email"), this.getColumn("Student Name"), this.currentInvoiceColumn, this.currentInvoiceColumn+1, this.getColumn("Invoice reminder"));
     
         invoiceCollector.sendReminders(range);
+    }
+
+    setInformationInStone() {
+        // Copy values and formatting from the source spreadsheet (URL in Data!B7) and overwrite the formula in A1
+        console.log("Setting band information in stone from source spreadsheet");
+        // Get the source spreadsheet URL from Data!B7
+        var sourceUrl = this.databaseData.getVariable("Band School ID");
+        var sourceSpreadsheet = SpreadsheetApp.openByUrl(sourceUrl);
+        var sourceSheet = sourceSpreadsheet.getSheetByName("Band School");
+        if (!sourceSheet) {
+            throw new Error('Sheet "Band School" not found in source spreadsheet.');
+        }
+
+        var lastRow = sourceSheet.getLastRow();
+        if (lastRow === 0) {
+            throw new Error('No data found in source sheet.');
+        }
+        var sourceRange = sourceSheet.getRange(1, 1, lastRow, this.lastCol);
+        var destRange = this.sheet.getRange(1, 1, lastRow, this.lastCol);
+
+        // Copy values and formatting
+        destRange.setValues(sourceRange.getValues());
+        destRange.setNumberFormats(sourceRange.getNumberFormats());
+        destRange.setBackgrounds(sourceRange.getBackgrounds());
+        destRange.setFontColors(sourceRange.getFontColors());
+        destRange.setFontWeights(sourceRange.getFontWeights());
+        destRange.setFontStyles(sourceRange.getFontStyles());
+        destRange.setFontSizes(sourceRange.getFontSizes());
+        destRange.setBackgrounds(sourceRange.getBackgrounds());
+
+        // Copy merged regions from source sheet 
+
+        var mergedRanges = sourceRange.getMergedRanges();
+
+        console.log("Found " + mergedRanges.length + " merged ranges in the source sheet.");
+
+        console.log("These ranges are:");
+
+        for (var i = 0; i < mergedRanges.length; i++) {
+            console.log("Range " + (i+1) + ": " + mergedRanges[i].getA1Notation());
+            var mergedRange = mergedRanges[i];
+            var destMergedRange = this.sheet.getRange(mergedRange.getRow(), mergedRange.getColumn(), mergedRange.getNumRows(), mergedRange.getNumColumns());
+            destMergedRange.merge();
+        }
+
+    }
+
+    isSetInStone() {
+        // If A1 has a formula, it's not set in stone
+        return this.sheet.getRange("A1").getFormula() === "";
     }
       
 }
