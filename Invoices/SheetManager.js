@@ -53,18 +53,23 @@ class SheetManager {
       term: this.invoiceRanges.getTermRange().getValue(),
       parentName: this.invoiceRanges.getParentName(),
       invoicePrice: this.invoiceRanges.getTotalCostRange().getValue()
-    }
+    };
 
     let recipient = this.invoiceRanges.getEmail();
 
     let templateSS = this.databaseSheetManager.databaseData.getTemplateSS();
     let template_type = updating ? "updating" : "default";
-    let emailer = Emails.newEmailer(templateSS, (type+" invoice"), template_type);
-    
-    let replyTo = type == "shp"? "geoff@therockacademy.co.nz" : "";
-        
-    emailer.sendEmail([recipient], invoiceInfo, [invoicePDF], replyTo)
 
+    try {
+      let emailer = Emails.newEmailer(templateSS, (type+" invoice"), template_type);
+      
+      let replyTo = type == "shp" ? "geoff@therockacademy.co.nz" : "";
+      emailer.sendEmail([recipient], invoiceInfo, [invoicePDF], replyTo);
+    } catch (error) {
+      // Delete the saved PDF if emailing fails
+      invoicePDF.setTrashed(true);
+      throw new Error("Failed to send email: " + error.message);
+    }
   }
 
   archiveInvoice() {
@@ -78,14 +83,19 @@ class SheetManager {
       filter(sheet => sheet.getName() != invoiceBuiltName).
       forEach(sheet => invoiceBuilderSpreadSheet.deleteSheet(sheet));  
 
-    let invoicePDF = DriveApp.createFile(invoiceBuilderSpreadSheet.getAs("application/PDF"))
+    let invoicePDF;
+    try {
+      invoicePDF = DriveApp.createFile(invoiceBuilderSpreadSheet.getAs("application/PDF"));
+      invoicePDF.setName(this.invoiceRanges.getInvoiceNumberRange().getValue() + ".pdf");
+      this.invoiceArchive.addInvoice(invoicePDF);
+      invoiceBuilt.setName(invoiceBuiltName + " (sent)");
+    } catch (error) {
+      // Clean up the sheet in the invoice builder if DriveApp.createFile fails
+      invoiceBuilderSpreadSheet.deleteSheet(invoiceBuilt);
+      throw new Error("Failed to create invoice PDF:\n" + error.message);
+    }
 
-    invoicePDF.setName(this.invoiceRanges.getInvoiceNumberRange().getValue() + ".pdf")
-    this.invoiceArchive.addInvoice(invoicePDF)
-
-    invoiceBuilt.setName(invoiceBuiltName + " (sent)")
-
-    return invoicePDF
+    return invoicePDF;
   }
 
   /**
