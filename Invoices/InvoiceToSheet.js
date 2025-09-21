@@ -97,7 +97,7 @@ class InvoiceCleaner extends InvoiceSheetRangeManager {
 
     //Add in placeholders
     // super.getLogoRange().setValue("Logo image here")
-    super.getParentRange().setValues([["parent name"], ["parents email"]])
+    super.getParentRange().setValues([["parent name"], ["parents@email.com"]])
     super.getAddressRange().setValues([["Address 1"], ["Address 2"], ["Phone number"]])
     super.getPaymentRange().setValues([["Company name"], ["Bank account"]])
     super.getInvoiceNumberRange().setValue("invoice number")
