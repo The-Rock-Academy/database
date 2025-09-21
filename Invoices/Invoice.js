@@ -88,6 +88,6 @@ class Invoice {
 }
 
 function newInvoice(invoiceFolderID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHire, company, term, type) {
-  let ID = (new InvoiceFolder(invoiceFolderID)).getNumberOfInvoices() + 1;
+  let ID = (new InvoiceFolder(invoiceFolderID)).getNextInvoiceNumber();
   return new Invoice(ID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHire, company, term, "", type)
 }

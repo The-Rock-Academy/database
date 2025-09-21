@@ -37,13 +37,17 @@ class SheetManager {
     }
 
     let invoicePDF = this.archiveInvoice()
-    debug("Archived")
+    debug("  Archived")
     this.emailInvoice(invoicePDF, updating, this.invoiceRanges.getInvoiceInfoRange().getValues()[0][1]);
-    debug("Invoice sent")
+    debug("  Invoice sent")
+    try{
     this.updateDatabaseSheet();
-    debug("Updated attendance sheet");
+    debug("  Updated attendance sheet");
     this.clearInvoice(true);
-    debug("Sent, archived and cleared invoice")
+    debug("  Sent, archived and cleared invoice")
+    } catch (error) {
+      throw new Error("Error occurred while sending invoice: " + error.message + "\nThe invoice was either not updated in database or not cleared from invoice sender. The invoice PDF has been archived. And parent was emailed.");
+    }
   }
 
   emailInvoice(invoicePDF, updating=false, type) {
