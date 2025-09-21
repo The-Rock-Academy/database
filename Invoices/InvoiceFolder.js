@@ -15,6 +15,22 @@ class InvoiceFolder {
     return numberOfFiles
   }
 
+  getNextInvoiceNumber() {
+    let files = this.folder.getFilesByType("application/PDF");
+    let highestNumber = 0;
+
+    while(files.hasNext()) {
+      let file = files.next();
+      let name = file.getName();
+      let number = parseInt(name.split(".pdf")[0]);
+      if (number > highestNumber) {
+        highestNumber = number;
+      }
+    }
+
+    return highestNumber + 1;
+  }
+
   invoiceExists(invoiceNumber) {
     let invoice;
     if (this.folder.getFilesByName(invoiceNumber + ".pdf").hasNext()) {
