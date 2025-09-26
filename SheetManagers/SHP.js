@@ -22,9 +22,11 @@ class SHPManager extends DatabaseSheetManager {
 
     reset(nextTermDetails) {
 
+        
         // Insert new header and rows
         this.sheet.insertRowsBefore(3, 31);
         let headerRow = this.sheet.getRange(3,1,1,this.sheet.getMaxColumns());
+
 
         let finalTermWCDate = nextTermDetails[nextTermDetails.length - 1];
         let tempDate = new Date(finalTermWCDate);
@@ -44,6 +46,9 @@ class SHPManager extends DatabaseSheetManager {
         headerRow.setFontSize(13);
         headerRow.setHorizontalAlignment("center");
         headerRow.setFontWeight("bold")
+
+        // Delete old data
+        this.sheet.deleteRows(4 + 31, this.sheet.getMaxRows() - (4 + 31) + 1);
     }
 
     updateSheetAfterInvoiceSent(invoiceNumber, totalCost, sentDate, numberOfLessons) {

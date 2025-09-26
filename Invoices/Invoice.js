@@ -1,11 +1,10 @@
 class Invoice {
-  constructor(ID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHireCost, company, term, note = "", type) {
+  constructor(ID, parentName, pupilName, email, lessons, costPerLesson, company, term, note = "", type) {
     this.parentName = parentName;
     this.pupilName = pupilName;
     this.email = email;
     this.lessons = lessons;
     this.costPerLesson = costPerLesson;
-    this.instrumentHireCost = instrumentHireCost;
     if (["TRA", "TSA", "GML", "GFAD"].includes(company)) {
       this.company = company;
     } else {
@@ -18,7 +17,6 @@ class Invoice {
     this.note = note;
     // This should be one of three  values term, holiday and band.
     this.type = type;
-    this.trials = trials;
     this.updated = false; // Whether or not this invoice is an update of a previous invoice.
   }
 
@@ -74,20 +72,12 @@ class Invoice {
       }
     ]
 
-    if (this.instrumentHireCost != "") {
-      costs.push({
-        desc: ("Instrument hire"),
-        quantity: this.lessons + this.trials,
-        price: this.instrumentHireCost
-      })
-    }
-
     return costs;
   }
 
 }
 
-function newInvoice(invoiceFolderID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHire, company, term, type) {
+function newInvoice(invoiceFolderID, parentName, pupilName, email, lessons, costPerLesson, company, term, type) {
   let ID = (new InvoiceFolder(invoiceFolderID)).getNextInvoiceNumber();
-  return new Invoice(ID, parentName, pupilName, email, lessons, trials, costPerLesson, instrumentHire, company, term, "", type)
+  return new Invoice(ID, parentName, pupilName, email, lessons, costPerLesson, company, term, "", type)
 }

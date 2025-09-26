@@ -197,7 +197,7 @@ class StudentProcessor extends NewStudentManager {
         // Get student information
         let genericInformation = this.getGenericInfo();
 
-        let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Instrument hire", "Tutor"];
+        let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Tutor"];
         let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, ServiceNames.WeeklyLessons);
 
         const newStudentInfo = {...genericInformation, ...weeklyLessonInfo};
@@ -211,7 +211,7 @@ class StudentProcessor extends NewStudentManager {
 
         // Add the student to the weekly lessons sheet
         let attendanceManager = AttendanceManager.getObjFromSS(this.mainSS);
-        attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Phone, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Instrument_hire, newStudentInfo.Tutor, newStudentInfo.Instruments_interested_in);
+        attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Phone, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Tutor, newStudentInfo.Instruments_interested_in);
 
         // Get the PDF booklets
         let instruments:string[] = newStudentInfo.Instruments_interested_in.split(",").map(s => s.trim());

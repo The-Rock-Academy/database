@@ -43,6 +43,10 @@ class DatabaseData {
   getBandSchoolInvoicingSheet() {
     return SpreadsheetApp.openByUrl(this.getVariable("Band School Invoicing URL")).getSheetByName(getBandSchoolInvoicingSheetName())
   }
+
+  getReplyToEmail() {
+    return this.getVariable("Invoice email replyTo");
+  }
 }
 
 function newDatabaseData(database) {

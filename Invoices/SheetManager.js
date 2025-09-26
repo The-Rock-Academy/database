@@ -66,8 +66,8 @@ class SheetManager {
 
     try {
       let emailer = Emails.newEmailer(templateSS, (type+" invoice"), template_type);
-      
-      let replyTo = type == "shp" ? "geoff@therockacademy.co.nz" : "";
+
+      let replyTo = this.databaseSheetManager.databaseData.getReplyToEmail();
       emailer.sendEmail([recipient], invoiceInfo, [invoicePDF], replyTo);
     } catch (error) {
       // Delete the saved PDF if emailing fails
