@@ -30,14 +30,10 @@ class AttendanceManager extends AttendanceSheetManager {
     }
 
     let billableAmount = this.getColumn("Billable Amount");
-    let noTrials = this.getColumn("No. Trials");
-    let hireCost = this.getColumn("Hire Cost");
     let lessonCost = this.getColumn("Lesson Cost");
 
     // Convert column numbers to letters
     let billableAmountLetter = getColumnLetter(billableAmount);
-    let noTrialsLetter = getColumnLetter(noTrials);
-    let hireCostLetter = getColumnLetter(hireCost);
     let lessonCostLetter = getColumnLetter(lessonCost);
     let noLessonsLetter = getColumnLetter(noLessons);
 
@@ -46,7 +42,7 @@ class AttendanceManager extends AttendanceSheetManager {
 
     // Set the formula for each cell in the range
     for (let row = 3; row <= lastRow + 2; row++) {
-        let formula = `=(${noTrialsLetter}${row} + ${noLessonsLetter}${row}) * ${hireCostLetter}${row} + (${noLessonsLetter}${row} * ${lessonCostLetter}${row})`;
+        let formula = `= ${noLessonsLetter}${row} * ${lessonCostLetter}${row}`;
         this.sheet.getRange(row, billableAmount).setFormula(formula);
     }
   }
@@ -251,11 +247,7 @@ class AttendanceManager extends AttendanceSheetManager {
     let invoiceTerm = this.currentTerm;
 
     let numberOfLessons = this.sheet.getRange(activeRow, this.getColumn("No. Lessons")).getValue();
-    let numberOfTrialLessons = this.sheet.getRange(activeRow, this.getColumn("No. Trials")).getValue();
     let costOfLesson = this.sheet.getRange(activeRow, this.getColumn("Lesson Cost")).getValue();
-    let instrumentHire = this.sheet.getRange(activeRow, this.getColumn("Hire cost")).getValue();
-    instrumentHire = instrumentHire == "" ? 0 : instrumentHire;
-    numberOfTrialLessons = numberOfTrialLessons == "" ? 0 : numberOfTrialLessons;
 
     // Check to make sure that all of the values are not empty
     console.log("Checking for empty values")
@@ -277,19 +269,17 @@ class AttendanceManager extends AttendanceSheetManager {
       }
     }
 
-    let calculatedTotalCost =  (costOfLesson + instrumentHire) * numberOfLessons + instrumentHire * numberOfTrialLessons;
-
     let expectedTotalCost = this.sheet.getRange(activeRow, this.getColumn("Billable Amount")).getValue();
 
-    if (calculatedTotalCost != expectedTotalCost) {
-      ui.alert("The total cost of the invoice does not match the expected total cost.\nExpected: $" + expectedTotalCost + "\nCalculated: $" + calculatedTotalCost + "\nPlease check columns v - w and make sure that everything is correct.", ui.ButtonSet.OK)
+    if (numberOfLessons * costOfLesson != expectedTotalCost) {
+      ui.alert("The total cost of the invoice does not match the expected total cost.\nExpected: $" + expectedTotalCost + "\nCalculated: $" + (numberOfLessons * costOfLesson) + "\nPlease check columns v - w and make sure that everything is correct and try again", ui.ButtonSet.OK)
       return
     }
 
     // -----------------------------
     // Create and load invoice into the invoice sheet
     // -----------------------------
-    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, numberOfTrialLessons, costOfLesson, instrumentHire, billingCompany,invoiceTerm, "term");
+    let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, costOfLesson, billingCompany,invoiceTerm, "term");
     if (updating) {
       invoice.number = this.getInvoiceNumberOfRow(row);
       let previousInvoiceInformation = this.getInvoiceRanges(invoice.number)
@@ -392,14 +382,13 @@ class AttendanceManager extends AttendanceSheetManager {
    * @param {string} parentName 
    * @param {string} email 
    * @param  costOfLesson 
-   * @param {number} instrumentHire 
    * @param {string} billingCompany 
    * @param {string} tutor 
    * @param {number} phone 
    * @param {string} address 
    * @param {string} preferedDay 
    */
-  addStudent(parentName, email, phone, address, pupilName, billingCompany,  preferedDay, lessonLength, costOfLesson, instrumentHire, tutor, instrument) {
+  addStudent(parentName, email, phone, address, pupilName, billingCompany,  preferedDay, lessonLength, costOfLesson, tutor, instrument) {
     //Create the new row
     let newStudentRow = this.getInactiveRowNumber();
     this.sheet.insertRowAfter(newStudentRow-1);
@@ -409,7 +398,6 @@ class AttendanceManager extends AttendanceSheetManager {
     this.sheet.getRange(newStudentRow, this.getColumn("Guardian")).setValue(parentName);
     this.sheet.getRange(newStudentRow, this.getColumn("Email")).setValue(email);
     this.sheet.getRange(newStudentRow, this.getColumn("Lesson Cost")).setValue(costOfLesson);
-    this.sheet.getRange(newStudentRow, this.getColumn("Hire cost")).setValue(instrumentHire);
     this.sheet.getRange(newStudentRow, this.getColumn("Pupils Billing Company")).setValue(billingCompany);
     this.sheet.getRange(newStudentRow, this.getColumn("Teacher")).setValue(tutor);
     this.sheet.getRange(newStudentRow, this.getColumn("Phone")).setValue(phone);

@@ -33,8 +33,8 @@ class AttendanceSheetManager extends DatabaseSheetManager {
         //Set date values
         nextTermDateRange.setValues([nextTermDetails])
     
-        //Copy across formattting
-          //Doing a complex format copying becuase there may be different numbers of weeks and the previous function did not copy column widths
+        //Copy across formatting
+          //Doing a complex format copying because there may be different numbers of weeks and the previous function did not copy column widths
         nextTermDetails.map((date, index) => {
           this.sheet.getRange(2,this.currentTermAttendanceColumnNum).copyTo(this.sheet.getRange(2,columnOfNextTerm + index), SpreadsheetApp.CopyPasteType.PASTE_COLUMN_WIDTHS, false);
           this.sheet.getRange(2,this.currentTermAttendanceColumnNum).copyTo(this.sheet.getRange(2,columnOfNextTerm + index), SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
