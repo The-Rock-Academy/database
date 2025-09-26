@@ -48,13 +48,7 @@ class AttendanceManager extends AttendanceSheetManager {
   }
 
   clean() {
-    // Get things that will be needed throughout the clean.
-    // Some of these might need to be refactoed to be part of the object.
-    let statusColumnNumber = this.getColumn("Status");
-    let statusColumn = this.sheet.getRange(3, statusColumnNumber, this.getInactiveRowNumber()-2, 1);
-
-    //Sort the active section by the status type
-    // To do this I need to get the active range and then sort it using the sort function
+    // Simply sort by teacher
     let activeRange = this.sheet.getRange(3, 1, this.getInactiveRowNumber()-3, this.sheet.getMaxColumns());
 
     activeRange.sort({column: this.getColumn("Teacher"), ascending: true})
@@ -405,9 +399,6 @@ class AttendanceManager extends AttendanceSheetManager {
     this.sheet.getRange(newStudentRow, this.getColumn("Day")).setValue(preferedDay);
     this.sheet.getRange(newStudentRow, this.getColumn("Instrument")).setValue(instrument);
     
-    //Set the status to active
-    this.sheet.getRange(newStudentRow, this.getColumn("Status")).setValue("Active");
-
     //X out all of the weeks up to and including this week.
     let currentWeekNumber = this.getWeekNumber();
     if (currentWeekNumber < 1) {
