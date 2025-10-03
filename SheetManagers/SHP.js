@@ -156,7 +156,7 @@ class SHPManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, 0, price / numberOfLessons, instrumentHire, billingCompany, "School holidays " + this.findRowTerm(row), "shp");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, numberOfLessons, price / numberOfLessons, billingCompany, "School holidays " + this.findRowTerm(row), "shp");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row);
             invoice.note = "This invoice is an updated version of an invoice sent on " + this.getInvoiceRanges(invoice.number).date.getValue().toLocaleString();

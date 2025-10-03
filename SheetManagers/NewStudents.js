@@ -1,16 +1,21 @@
 // These enum values must line up with the "Services Interested in" column and the three subheadings of the student information in the New Students sheet
-enum ServiceNames {
-    WeeklyLessons =  "Mobile Lessons",
-    BandSchool = "Band School",
-    SHP = "School Holiday Programme"
+const ServiceNames = {
+    WeeklyLessons:  "Mobile Lessons",
+    BandSchool: "Band School",
+    SHP: "School Holiday Programme"
 }
 
 class NewStudentManager {
-    static sheetName: string = "New Students";
-    sheet: GoogleAppsScript.Spreadsheet.Sheet;
 
-    static columnHeaderRow: number = 1;
-    static columnCategoryRow: number = 2;
+    static sheetName() {
+        return "New Students";
+    }
+    static columnHeaderRow() {
+        return 1;
+    }
+    static columnCategoryRow() {
+        return 2;
+    }
 
 
 
@@ -18,12 +23,12 @@ class NewStudentManager {
         this.sheet = sheet;
     }
 
-    getColumn(name:string, category:string="", row:number=NewStudentManager.columnHeaderRow) {
+    getColumn(name, category="", row=NewStudentManager.columnHeaderRow()) {
         let column;
         if (category == "") {
             column = this.sheet.getRange(row, 1, 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name) + 1;
         } else {
-            let categoryHeader = this.sheet.getRange(NewStudentManager.columnCategoryRow,this.getColumn(category, "", NewStudentManager.columnCategoryRow));
+            let categoryHeader = this.sheet.getRange(NewStudentManager.columnCategoryRow(),this.getColumn(category, "", NewStudentManager.columnCategoryRow()));
             column = this.sheet.getRange(row, categoryHeader.getColumn(), 1, this.sheet.getLastColumn()).getValues()[0].indexOf(name)  + categoryHeader.getColumn();
         }
         if (column == 0) {
@@ -50,21 +55,17 @@ class NewStudentManager {
     
         ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
             this.sheet.getRange(3,this.getColumn(day, ServiceNames.SHP),this.sheet.getLastRow(),1).setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
-        };
+        });
         console.log("Cleaned " + this.sheet.getName());
     }
 }
 
-function NewStudentManagerFromSS(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
-    return new NewStudentManager(ss.getSheetByName(NewStudentManager.sheetName));
+function NewStudentManagerFromSS(ss) {
+    return new NewStudentManager(ss.getSheetByName(NewStudentManager.sheetName()));
 }
 
 class StudentProcessor extends NewStudentManager {
-    activeRow: number;
-    mainSS: GoogleAppsScript.Spreadsheet.Spreadsheet;
-
-
-    constructor(sheet, activeRow:number) {
+    constructor(sheet, activeRow) {
         super(sheet);
         this.activeRow = activeRow;
         this.mainSS = SpreadsheetApp.openByUrl((new DatabaseData(this.sheet.getParent())).getVariable("Main Database SS"));
@@ -74,7 +75,7 @@ class StudentProcessor extends NewStudentManager {
         this.sheet.getRange(this.activeRow, 1, 1, this.sheet.getLastColumn()).clear();
     }
 
-    filterBlankColumns(columnNames: string[], category: string): {} {
+    filterBlankColumns(columnNames, category) {
         const result = {};
         columnNames.forEach((name) => {
             let range = this.sheet.getRange(this.activeRow, this.getColumn(name, category));
@@ -117,8 +118,8 @@ class StudentProcessor extends NewStudentManager {
         emailer.sendEmail([emailToSendTo], enquiryInformation, [], enquiryInformation["Email"]);
     }
 
-    getGenericInfo(): {} {
-        let genericInfoColumnNames: string[] = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
+    getGenericInfo() {
+        let genericInfoColumnNames = ["Name", "Email", "Phone", "Suburb", "Student name", "Billing Company", "Level", "Age", "Instruments interested in"];
 
         return this.filterBlankColumns(genericInfoColumnNames, "General");
     }
@@ -152,7 +153,7 @@ class StudentProcessor extends NewStudentManager {
 
         let genericInformation = this.getGenericInfo();
 
-        let shpInformationColumnNames: string[] = ["Message","Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
+        let shpInformationColumnNames = ["Message","Emergency contact", "Mon", "Tue", "Wed", "Thu", "Fri"];
         let shpInfo = this.filterBlankColumns(shpInformationColumnNames, ServiceNames.SHP);
 
         let shpManager = new SHPManager(this.sheet.getParent().getSheetByName(SHPManager.sheetName()));
@@ -168,7 +169,7 @@ class StudentProcessor extends NewStudentManager {
     processNewBandSchoolStudent() {
         let genericInformation = this.getGenericInfo();
 
-        let bandSchoolInformationColumnNames: string[] = ["Day", "Time", "Tutor"];
+        let bandSchoolInformationColumnNames = ["Day", "Time", "Tutor"];
         let bandSchoolInfo = this.filterBlankColumns(bandSchoolInformationColumnNames, ServiceNames.BandSchool);
 
         const newStudentInfo = {...genericInformation, ...bandSchoolInfo};
@@ -197,7 +198,7 @@ class StudentProcessor extends NewStudentManager {
         // Get student information
         let genericInformation = this.getGenericInfo();
 
-        let weeklyLessonInformationColumnNames: string[] = ["Preferred days of week", "Lesson length", "Lesson cost", "Tutor"];
+        let weeklyLessonInformationColumnNames = ["Preferred days of week", "Lesson length", "Lesson cost", "Tutor"];
         let weeklyLessonInfo = this.filterBlankColumns(weeklyLessonInformationColumnNames, ServiceNames.WeeklyLessons);
 
         const newStudentInfo = {...genericInformation, ...weeklyLessonInfo};
@@ -214,7 +215,7 @@ class StudentProcessor extends NewStudentManager {
         attendanceManager.addStudent( newStudentInfo.Name, newStudentInfo.Email, newStudentInfo.Phone, newStudentInfo.Suburb, newStudentInfo.Student_name, newStudentInfo.Billing_Company, newStudentInfo.Preferred_days_of_week, newStudentInfo.Lesson_length, newStudentInfo.Lesson_cost, newStudentInfo.Tutor, newStudentInfo.Instruments_interested_in);
 
         // Get the PDF booklets
-        let instruments:string[] = newStudentInfo.Instruments_interested_in.split(",").map(s => s.trim());
+        let instruments = newStudentInfo.Instruments_interested_in.split(",").map(s => s.trim());
 
         let bookletFolder = DriveApp.getFolderById((new DatabaseData(this.sheet.getParent())).getVariable("Instrument booklets"));
         let bookletFolderFiles = bookletFolder.getFiles();
@@ -243,10 +244,10 @@ class StudentProcessor extends NewStudentManager {
 }
 
 
-function NewStudentManagerSheetName(): string {
-    return NewStudentManager.sheetName;
+function NewStudentManagerSheetName() {
+    return NewStudentManager.sheetName();
 }
 
-function newStudentProcesser(activeSheet:  GoogleAppsScript.Spreadsheet.Sheet, activeRow: number): StudentProcessor {
+function newStudentProcesser(activeSheet, activeRow) {
     return new StudentProcessor(activeSheet, activeRow);
 }
