@@ -81,18 +81,20 @@ class SheetManager {
     let invoiceBuilderSpreadSheet = SpreadsheetApp.openById(this.databaseSheetManager.databaseData.getVariable("Invoice Builder"));
 
     let invoiceBuilt = this.sheet.copyTo(invoiceBuilderSpreadSheet);
-    let invoiceBuiltName = "Invoice " + this.invoiceRanges.getInvoiceNumberRange().getValue();
-    invoiceBuilt.setName(invoiceBuiltName);
+    // Add some unique timestamp to the name to avoid name conflicts
+    let timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+    let uniqueName = "Invoice " + this.invoiceRanges.getInvoiceNumberRange().getValue() + " " + timestamp;
+    invoiceBuilt.setName(uniqueName);
     invoiceBuilderSpreadSheet.getSheets().
-      filter(sheet => sheet.getName() != invoiceBuiltName).
-      forEach(sheet => invoiceBuilderSpreadSheet.deleteSheet(sheet));  
+      filter(sheet => sheet.getName() != uniqueName).
+      forEach(sheet => invoiceBuilderSpreadSheet.deleteSheet(sheet));
 
     let invoicePDF;
     try {
       invoicePDF = DriveApp.createFile(invoiceBuilderSpreadSheet.getAs("application/PDF"));
       invoicePDF.setName(this.invoiceRanges.getInvoiceNumberRange().getValue() + ".pdf");
       this.invoiceArchive.addInvoice(invoicePDF);
-      invoiceBuilt.setName(invoiceBuiltName + " (sent)");
+      invoiceBuilt.setName(uniqueName + " (sent)");
     } catch (error) {
       // Clean up the sheet in the invoice builder if DriveApp.createFile fails
       invoiceBuilderSpreadSheet.deleteSheet(invoiceBuilt);
