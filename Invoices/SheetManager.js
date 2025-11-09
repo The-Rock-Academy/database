@@ -97,7 +97,6 @@ class SheetManager {
       invoiceBuilt.setName(uniqueName + " (sent)");
     } catch (error) {
       // Clean up the sheet in the invoice builder if DriveApp.createFile fails
-      invoiceBuilderSpreadSheet.deleteSheet(invoiceBuilt);
       throw new Error("Failed to create invoice PDF:\n" + error.message);
     }
 
