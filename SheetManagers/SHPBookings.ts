@@ -48,7 +48,7 @@ class SHPBookings {
             return day.toLowerCase();
         });
 
-        let days_array = ["monday", "tuesday", "wednesday", "thursday", "friday", "second monday", "second tuesday", "second wednesday", "second thursday", "second friday"].map((day) => {
+        let days_array = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((day) => {
             return days.includes(day) ? true : false;
         });
 
