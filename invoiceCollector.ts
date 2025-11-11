@@ -36,11 +36,11 @@ class InvoiceCollector {
                     let emailer = Emails.newEmailer(this.templateSS, InvoiceCollector.templateName);
                     let data = this.sheet.getRange(startingRow+index,1,1,this.sheet.getLastColumn()).getValues()[0];
                     emailer.sendEmail([data[this.parent_email-1]], {
-                        "Parent_name": data[this.parent_name-1],
-                        "Student_name": data[this.pupil_name-1],
-                        "Invoice_amount": data[this.invoice_amount-1],
-                        "Invoice_number": data[this.invoice_number-1],
-                        "Sent_date": (new Date(data[this.sent-1])).toLocaleDateString("en-NZ")
+                        "parentName": data[this.parent_name-1],
+                        "studentName": data[this.pupil_name-1],
+                        "invoicePrice": data[this.invoice_amount-1],
+                        "invoiceNumber": data[this.invoice_number-1],
+                        "sentDate": (new Date(data[this.sent-1])).toLocaleDateString("en-NZ")
                     },[invoicePDF]);
 
                     this.sheet.getRange(startingRow+index,this.reminder_date).setValue((new Date()).toLocaleDateString("en-NZ"));
