@@ -99,8 +99,6 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
         // Collecting information for invoice
         // --------------------------------
 
-        let numberOfWeeks = this.sheet.getRange(1,this.getColumn(previousTerm ? "Previous Term" : "Current Term")).getMergedRanges()[0].getNumColumns()
-
         let parentName = this.sheet.getRange(activeRow, this.getColumn("Guardian")).getValue();
 
         let email = this.sheet.getRange(activeRow, this.getColumn("Email")).getValue();
@@ -119,7 +117,7 @@ class BandSchoolInvoicingManager extends DatabaseSheetManager {
         // -----------------------------
         // Create and load invoice into the invoice sheet
         // -----------------------------
-        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, 1, 0, totalPrice, "", billingCompany,invoiceTerm, "band");
+        let invoice = newInvoice(this.databaseData.getVariable("Invoice Folder"), parentName, pupilName, email, 1, totalPrice, billingCompany,invoiceTerm, "band");
         if (updating) {
             invoice.number = this.getInvoiceNumberOfRow(row, previousTerm);
             let previousInvoiceInformation = this.getInvoiceRanges(invoice.number, previousTerm)
