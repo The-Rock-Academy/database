@@ -48,7 +48,12 @@ class AttendanceSheetManager extends DatabaseSheetManager {
     }
       
     getCurrentTermWeeks() {
-    return this.sheet.getRange(1,this.currentTermAttendanceColumnNum).getMergedRanges()[0].getNumColumns()
+        merged_ranges = this.sheet.getRange(1,this.currentTermAttendanceColumnNum).getMergedRanges()
+        if (merged_ranges.length == 0) {
+            throw new Error("Current Term header is not merged. Merge the header cells for the current term attendance column.");
+        }
+
+    return merged_ranges[0].getNumColumns()
     }
 
     sendReminder(range) {
