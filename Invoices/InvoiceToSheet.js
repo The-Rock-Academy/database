@@ -121,7 +121,7 @@ class InvoiceLoader extends InvoiceSheetRangeManager{
   }
 
   loadInvoice(ssOfOrigin) {
-    debug("Loading invoice information into sheet")
+    console.log("Loading invoice information into sheet")
     this.loadParentInfo()
     this.loadCosts()
     this.loadInvoiceDetails()
@@ -129,7 +129,7 @@ class InvoiceLoader extends InvoiceSheetRangeManager{
     super.getNotesRange().setValue(this.invoice.note)
     super.getInvoiceInfoRange().setValues([[ssOfOrigin.getId(), this.invoice.type, this.invoice.updated ? "update" : "new"]])
     SpreadsheetApp.flush();
-    debug("Finished loading")
+    console.log("Finished loading")
   }
 
   loadParentInfo() {

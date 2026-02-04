@@ -1,0 +1,13 @@
+{
+  "name": "rock-academy-database",
+  "version": "1.0.0",
+  "description": "Google Apps Script for Rock Academy database management",
+  "author": "The Rock Academy",
+  "license": "ISC",
+  "scripts": {
+    "push": "clasp push -w"
+  },
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.0"
+  }
+}

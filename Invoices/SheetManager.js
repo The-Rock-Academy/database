@@ -15,17 +15,17 @@ class SheetManager {
 
 
   sendInvoice(updating = false) {
-    debug("Starting sending process");
+    console.log("Starting sending process");
     if (!updating && this.invoiceRanges.getInvoiceInfoRange().getValues()[0][2] == "update") {
       updating = true;
     }
     
-    debug("Checking if invoice exists")
+    console.log("Checking if invoice exists")
     if (!updating && this.invoiceArchive.invoiceExists(this.invoiceRanges.getInvoiceNumberRange().getValue())) {
       let ui = SpreadsheetApp.getUi()
       let clearAnswer = ui.alert("This invoice already exists in the archive and has probably already been sent to parent. Would you really like to send this invoice?", ui.ButtonSet.YES_NO);
       if (clearAnswer == ui.Button.NO){
-        debug("Not sending invoice as user has decided against it")
+        console.log("Not sending invoice as user has decided against it")
         return
       } else {
         updating = true;
@@ -37,14 +37,14 @@ class SheetManager {
     }
 
     let invoicePDF = this.archiveInvoice()
-    debug("  Archived")
+    console.log("  Archived")
     this.emailInvoice(invoicePDF, updating, this.invoiceRanges.getInvoiceInfoRange().getValues()[0][1]);
-    debug("  Invoice sent")
+    console.log("  Invoice sent")
     try{
     this.updateDatabaseSheet();
-    debug("  Updated attendance sheet");
+    console.log("  Updated attendance sheet");
     this.clearInvoice(true);
-    debug("  Sent, archived and cleared invoice")
+    console.log("  Sent, archived and cleared invoice")
     } catch (error) {
       throw new Error("Error occurred while sending invoice: " + error.message + "\nThe invoice was either not updated in database or not cleared from invoice sender. The invoice PDF has been archived. And parent was emailed.");
     }
