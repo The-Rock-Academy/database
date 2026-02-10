@@ -57,3 +57,18 @@ There are three parts to the code:
 - [Invoices](./Invoices/): Code that handles the invoice building, sending and archiving.
 - [SheetManagers](./SheetManagers/): Code that handles specific features of each spreadsheet tab (e.g SHP bookings, mobile lessons attendance etc). The main features for each tab are invoicing and resetting.
 -  [Root level code](./): Code that handles the "Main database" as well as miscellaneous utilities used across the codebase.
+
+# Contributing guide
+
+If you are a developer who has been asked to contribute to this codebase, please reach out to James Thompson (tech followed by the therockacademy.co.nz email domain) for an introduction to the code and guidance on how to contribute.
+
+## Deployment workflow
+
+Each of the spreadsheets pulls this code from the Google Apps Script library. The spreadsheets uses a specific version of the library.
+When a commit is made to the main branch of this repository, a new version of the library is creates [see workflow](./.github/workflows/clas-deploy.yml). This new version is not automatically used by the spreadsheets, the version used by each spreadsheet needs to be manually updated. Note the workflow does say it fails however this is a red herring as a new version is infact deployed.
+
+## Development workflow
+
+I use the clasp cli app with the command `clasp push -w` when developing. This means that the database library head is updated with the latest version of the code. Then for testing I have the spreadsheet pointed to the head version of the library.
+
+There is a development folder which has some copies of the spreadsheet that are used for testing.
